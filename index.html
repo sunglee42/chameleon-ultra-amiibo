@@ -190,6 +190,9 @@
         .status-error {
             color: #dc3545;
         }
+        .emulate-button {
+            background-color: #28a745;
+        }
         #collections-section {
             width: 100%;
             max-width: 800px;
@@ -679,7 +682,7 @@
                         </label>
                     </div>
                     <button id="slot-write-btn">Write to Slot</button>
-                    <button id="slot-emulate-btn" style="display: none;">Emulate</button>
+                    <button id="slot-emulate-btn">Emulate</button>
                     <p id="slot-status"></p>
                 </div>
             </div>
@@ -696,6 +699,21 @@
             <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
                 <button id="clear-cancel-btn" style="background-color: #6c757d;">Cancel</button>
                 <button id="clear-confirm-btn" style="background-color: #dc3545;">Clear Slot</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Randomize UID Modal -->
+    <div id="randomizeModal" class="modal">
+        <div class="modal-content" style="max-width: 450px;">
+            <span class="close-button" id="randomize-close-button">&times;</span>
+            <h3>Randomize UID</h3>
+            <p>Generate a new random UID for <strong id="randomize-slot-name">Slot X</strong>?</p>
+            <p style="color: #666; font-size: 0.9em;">You can either write the new UID to the slot permanently (persists after reboot) or emulate it temporarily (lost after reboot).</p>
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                <button id="randomize-cancel-btn" style="background-color: #6c757d;">Cancel</button>
+                <button id="randomize-write-btn">Write</button>
+                <button id="randomize-emulate-btn" class="emulate-button">Emulate</button>
             </div>
         </div>
     </div>
@@ -720,7 +738,7 @@
             <div style="display: flex; gap: 10px; justify-content: flex-end;">
                 <button id="upload-cancel-btn" style="background-color: #6c757d;">Cancel</button>
                 <button id="upload-confirm-btn">Write</button>
-                <button id="upload-emulate-btn" style="background-color: #28a745; display: none;">Upload & Emulate</button>
+                <button id="upload-emulate-btn" class="emulate-button">Emulate</button>
             </div>
 
             <div id="upload-modal-status" style="margin-top: 15px; padding: 10px; border-radius: 4px; display: none;"></div>
@@ -767,7 +785,8 @@
 
             <div class="modal-buttons">
                 <button id="load-collection-cancel-btn" style="background-color: #6c757d;">Cancel</button>
-                <button id="load-collection-confirm-btn" disabled>Load</button>
+                <button id="load-collection-write-btn" disabled>Write</button>
+                <button id="load-collection-emulate-btn" class="emulate-button" disabled>Emulate</button>
             </div>
         </div>
     </div>
@@ -866,7 +885,7 @@
                 <div style="display: flex; gap: 10px; justify-content: flex-end;">
                     <button id="generate-cancel-btn" style="background-color: #6c757d;">Cancel</button>
                     <button id="generate-write-btn">Write</button>
-                    <button id="generate-emulate-btn" style="background-color: #28a745; display: none;">Emulate</button>
+                    <button id="generate-emulate-btn" class="emulate-button">Emulate</button>
                 </div>
             </div>
             <!-- End Search Tab Content -->
@@ -946,6 +965,14 @@
         const clearSlotName = document.getElementById('clear-slot-name');
         const clearCancelBtn = document.getElementById('clear-cancel-btn');
         const clearConfirmBtn = document.getElementById('clear-confirm-btn');
+
+        // Randomize modal elements
+        const randomizeModal = document.getElementById('randomizeModal');
+        const randomizeCloseButton = document.getElementById('randomize-close-button');
+        const randomizeSlotName = document.getElementById('randomize-slot-name');
+        const randomizeCancelBtn = document.getElementById('randomize-cancel-btn');
+        const randomizeWriteBtn = document.getElementById('randomize-write-btn');
+        const randomizeEmulateBtn = document.getElementById('randomize-emulate-btn');
 
         // Download modal elements
         const downloadModal = document.getElementById('downloadModal');
@@ -1724,6 +1751,51 @@
             delete clearConfirmBtn.dataset.slotIndex;
         }
 
+        // Modal functions for Randomize UID
+        let randomizeTargetSlot = null;
+        let randomizeTargetName = '';
+
+        function openRandomizeModal(slotIndex, slotName) {
+            randomizeTargetSlot = slotIndex;
+            randomizeTargetName = slotName;
+            randomizeSlotName.textContent = `${slotName} (Slot ${slotIndex + 1})`;
+            randomizeModal.style.display = 'flex';
+        }
+
+        function closeRandomizeModal() {
+            randomizeModal.style.display = 'none';
+            randomizeTargetSlot = null;
+            randomizeTargetName = '';
+        }
+
+        randomizeCloseButton.addEventListener('click', closeRandomizeModal);
+        randomizeCancelBtn.addEventListener('click', closeRandomizeModal);
+
+        randomizeWriteBtn.addEventListener('click', async () => {
+            if (randomizeTargetSlot !== null) {
+                const slotCard = document.querySelector(`[data-slot-index="${randomizeTargetSlot}"]`);
+                let amiiboId = null;
+                if (slotCard) {
+                    const slotSummary = slotCard.querySelector('.slot-summary');
+                    if (slotSummary) {
+                        const match = slotSummary.innerHTML.match(/Amiibo ID:<\/strong>\s*([A-F0-9]{16})/i);
+                        if (match) {
+                            amiiboId = match[1];
+                        }
+                    }
+                }
+                closeRandomizeModal();
+                await randomizeSlotUID(randomizeTargetSlot, randomizeTargetName, amiiboId);
+            }
+        });
+
+        randomizeEmulateBtn.addEventListener('click', async () => {
+            if (randomizeTargetSlot !== null) {
+                closeRandomizeModal();
+                await randomizeAndEmulate(randomizeTargetSlot, randomizeTargetName);
+            }
+        });
+
         // Modal functions for Download
         function openDownloadModal(slotIndex, slotName) {
             downloadSlotName.textContent = `${slotName} (Slot ${slotIndex + 1})`;
@@ -1744,13 +1816,17 @@
             uploadFileInput.value = '';
             uploadModalStatus.style.display = 'none';
 
-            // Show randomize UID option only when keys are available
+            // Always show randomize and emulate options
+            uploadRandomizeSection.style.display = 'block';
+            uploadEmulateBtn.style.display = 'inline-block';
+
+            // Disable randomize checkbox if keys are not loaded, but keep it visible
             if (keysLoaded && maboiiKeys) {
-                uploadRandomizeSection.style.display = 'block';
-                uploadRandomizeUid.checked = localStorage.getItem('randomUidEnabled') !== 'false'; // Use saved preference
+                uploadRandomizeUid.disabled = false;
+                uploadRandomizeUid.checked = localStorage.getItem('randomUidEnabled') !== 'false';
             } else {
-                uploadRandomizeSection.style.display = 'none';
-                uploadRandomizeUid.checked = false; // Force unchecked when no keys
+                uploadRandomizeUid.disabled = true;
+                uploadRandomizeUid.checked = false;
             }
         }
 
@@ -1860,21 +1936,16 @@
         // Randomize & Emulate function - reads current emulated data and randomizes UID
         async function randomizeAndEmulate(slotIndex, slotName) {
             try {
-                // Check if keys are available
                 if (!keysLoaded || !maboiiKeys) {
                     throw new Error('Retail keys are required for UID randomization');
                 }
 
                 showUploadProgress(`Reading emulated data from ${slotName}`, 20, 'Reading current emulation...');
 
-                // First activate the slot to ensure we're reading the right data
                 const activateSlotData = new Uint8Array([slotIndex]);
                 await ultra.sendCommand(CMD_SET_ACTIVE_SLOT, activateSlotData);
-
-                // Small delay to ensure slot is active
                 await new Promise(resolve => setTimeout(resolve, 100));
 
-                // Read the current emulated data
                 const currentData = await ultra.readCurrentEmulatedData();
 
                 if (!currentData.amiiboId || currentData.amiiboId === '0000000000000000') {
@@ -1883,20 +1954,18 @@
 
                 updateUploadProgress('Generating new UID...', 50, 'Creating fresh UID while preserving amiibo ID');
 
-                // Generate fresh amiibo data with same ID but new random UID
                 const generatedData = await generateEncryptedAmiiboData(currentData.amiiboId);
 
                 updateUploadProgress('Starting emulation with new UID...', 90, 'Emulating with randomized UID');
 
-                // Emulate with the new UID
-                await ultra.emulateNtag215(slotIndex, generatedData.pageData, generatedData.uid);
+                await ultra.emulateBinToSlot(slotIndex, generatedData.pageData, slotName, null, new Uint8Array([0, 4, 4, 2, 1, 0, 17, 3]));
 
                 updateUploadProgress('Emulation updated!', 100, 'Successfully randomized UID and restarted emulation');
 
                 setTimeout(() => {
                     hideUploadProgress();
                     setUploadStatus(`Successfully randomized UID and emulating ${slotName} on slot ${slotIndex + 1}`, 'success');
-                    refreshSingleSlotDisplay(slotIndex); // Refresh just this slot
+                    refreshSingleSlotDisplay(slotIndex);
                 }, 1500);
 
             } catch (error) {
@@ -2158,10 +2227,8 @@
             document.getElementById('selected-amiibo-section').style.display = 'block';
             document.getElementById('amiibo-search-results').style.display = 'none';
 
-            // Clear previous selections in cards
-            document.querySelectorAll('.recent-amiibo-card, .favorite-amiibo-card').forEach(c => c.classList.remove('selected'));
-
-            // Amiibo is now selected and visible in the UI
+            // Always show the emulate button
+            generateEmulateBtn.style.display = 'inline-block';
         }
 
         // Favorites Management
@@ -2437,63 +2504,19 @@
                 return response.getUint8(0);
             }
 
-            async _writeNtag215(slot, data, uid) {
-                const setTypeData = new Uint8Array(3);
-                const setTypeView = new DataView(setTypeData.buffer);
-                setTypeView.setUint8(0, slot);
-                setTypeView.setUint16(1, TagType.NTAG_215, false);
-                await this.sendCommand(CMD_SET_SLOT_TAG_TYPE, setTypeData);
-
-                const setDefaultData = new Uint8Array(3);
-                const setDefaultView = new DataView(setDefaultData.buffer);
-                setDefaultView.setUint8(0, slot);
-                setDefaultView.setUint16(1, TagType.NTAG_215, false);
-                await this.sendCommand(CMD_SET_SLOT_DATA_DEFAULT, setDefaultData);
-
-                const atqa = new Uint8Array([0x00, 0x44]);
-                const sak = 0x00;
-                const ats = new Uint8Array([]);
-                const antiCollData = new Uint8Array(1 + uid.length + atqa.length + 1 + ats.length);
-                let offset = 0;
-                antiCollData[offset++] = uid.length;
-                antiCollData.set(uid, offset); offset += uid.length;
-                antiCollData.set(atqa, offset); offset += atqa.length;
-                antiCollData[offset++] = sak;
-                antiCollData[offset++] = ats.length;
-                if (ats.length > 0) antiCollData.set(ats, offset);
-                await this.sendCommand(CMD_MF1_SET_ANTICOLLISION, antiCollData);
-
-                const pageSize = 4;
-                for (let i = 0; i < data.length; i += pageSize) {
-                    const page = i / pageSize;
-                    let chunk = data.slice(i, i + pageSize);
-                    if (chunk.length < pageSize) {
-                        const paddedChunk = new Uint8Array(pageSize);
-                        paddedChunk.set(chunk);
-                        chunk = paddedChunk;
-                    }
-                    const writeData = new Uint8Array(2 + chunk.length);
-                    const writeView = new DataView(writeData.buffer);
-                    writeView.setUint8(0, page);
-                    writeView.setUint8(1, 1);
-                    writeData.set(chunk, 2);
-                    await this.sendCommand(CMD_MF0_NTAG_WRITE_EMU_PAGE_DATA, writeData);
-                }
-            }
-
-            async writeNtag215ToSlot(slot, data, uid, name) {
-                // First set the slot as active to ensure it's properly initialized
+            async emulateBinToSlot(slot, binData, name, signatureData = null, versionData = null) {
+                // First set the slot as active
                 const activateSlotData = new Uint8Array([slot]);
                 await this.sendCommand(CMD_SET_ACTIVE_SLOT, activateSlotData);
 
-                // Write the NTAG215 data
-                await this._writeNtag215(slot, data, uid);
+                // Use the new centralized method to write all the standard data
+                await this._writeAmiiboData(slot, binData, signatureData, versionData);
 
-                // Enable the slot for HF frequency
-                const enableSlotData = new Uint8Array([slot, TagFrequency.HF, 1]); // slot, frequency, enable(1)
+                // Enable the slot for HF frequency so it can be detected
+                const enableSlotData = new Uint8Array([slot, TagFrequency.HF, 1]);
                 await this.sendCommand(CMD_SET_SLOT_ENABLE, enableSlotData);
 
-                // Set the slot nickname
+                // Set the slot nickname (volatile, not saved to flash)
                 const textEncoder = new TextEncoder();
                 let nameBytes = textEncoder.encode(name);
                 if (nameBytes.length > 255) {
@@ -2504,15 +2527,6 @@
                 setNameData[1] = TagFrequency.HF; // HF frequency
                 setNameData.set(nameBytes, 2);
                 await this.sendCommand(CMD_SET_SLOT_TAG_NICK, setNameData);
-
-                // Save the configuration
-                await this.sendCommand(CMD_SLOT_DATA_CONFIG_SAVE);
-            }
-
-            async emulateNtag215(slot, data, uid) {
-                const activateSlotData = new Uint8Array([slot]);
-                await this.sendCommand(CMD_SET_ACTIVE_SLOT, activateSlotData);
-                await this._writeNtag215(slot, data, uid);
             }
 
             async setSignatureData(signatureData) {
@@ -2583,11 +2597,7 @@
                 }
             }
 
-            async writeBinToSlot(slot, binData, name, signatureData = null, versionData = null) {
-                // First set the slot as active to ensure it's properly initialized
-                const activateSlotData = new Uint8Array([slot]);
-                await this.sendCommand(CMD_SET_ACTIVE_SLOT, activateSlotData);
-
+            async _writeAmiiboData(slot, binData, signatureData = null, versionData = null) {
                 // Set slot type to NTAG_215
                 const setTypeData = new Uint8Array(3);
                 const setTypeView = new DataView(setTypeData.buffer);
@@ -2603,72 +2613,38 @@
                 await this.sendCommand(CMD_SET_SLOT_DATA_DEFAULT, setDefaultData);
 
                 // Extract UID data for later anti-collision setup
-                const page0 = binData.slice(0, 4);   // [uid0, uid1, uid2, BCC0]
-                const page1 = binData.slice(4, 8);   // [uid3, uid4, uid5, uid6]
+                const page0 = binData.slice(0, 4);
+                const page1 = binData.slice(4, 8);
 
-                console.log('Page 0 data:', Array.from(page0).map(b => '0x' + b.toString(16).padStart(2, '0')).join(' '));
-                console.log('Page 1 data:', Array.from(page1).map(b => '0x' + b.toString(16).padStart(2, '0')).join(' '));
-                console.log('Expected UID: 04 CE DB BA 79 11 90');
-
-                // Store for anti-collision setup after page writing
                 const fullUidWithBcc = new Uint8Array(8);
-                fullUidWithBcc.set(page0, 0);       // Copy page 0
-                fullUidWithBcc.set(page1, 4);       // Copy page 1
+                fullUidWithBcc.set(page0, 0);
+                fullUidWithBcc.set(page1, 4);
 
-                // Use provided version data or default NTAG215 version
                 const actualVersionData = versionData || new Uint8Array([0, 4, 4, 2, 1, 0, 17, 3]);
-                console.log('Setting version data:', Array.from(actualVersionData).map(b => '0x' + b.toString(16).padStart(2, '0')).join(' '));
                 await this.setVersionData(actualVersionData);
 
-                // Set NTAG215 write mode to normal for proper emulation
                 try {
-                    const writeMode = 0; // 0 = normal, 1 = denied, 2 = deceive, 3 = shadow
-                    await this.sendCommand(CMD_MF0_NTAG_SET_WRITE_MODE, new Uint8Array([writeMode]));
-                    console.log('Set NTAG write mode to normal');
+                    await this.sendCommand(CMD_MF0_NTAG_SET_WRITE_MODE, new Uint8Array([0]));
                 } catch (e) {
-                    console.log('NTAG write mode command failed:', e.message);
+                    debugLog('NTAG write mode command failed:', e.message);
                 }
 
-                // Disable UID magic mode for normal NTAG215 emulation
                 try {
-                    await this.sendCommand(CMD_MF0_NTAG_SET_UID_MAGIC_MODE, new Uint8Array([0])); // 0 = disabled
-                    console.log('Disabled UID magic mode');
+                    await this.sendCommand(CMD_MF0_NTAG_SET_UID_MAGIC_MODE, new Uint8Array([0]));
                 } catch (e) {
-                    console.log('UID magic mode command failed:', e.message);
+                    debugLog('UID magic mode command failed:', e.message);
                 }
 
-                // Set signature data (GUI sets this even if all zeros)
-                const slotSignatureData = new Uint8Array(32); // All zeros like in slot.json
+                const slotSignatureData = new Uint8Array(32);
                 await this.setSignatureData(slotSignatureData);
-                console.log('Set signature data (32 zero bytes)');
 
-                // Also set ECC signature data from file if provided
                 if (signatureData && signatureData.length === 32) {
                     await this.setSignatureData(signatureData);
-                    console.log('Set ECC signature data from file');
                 }
 
-                // Enable password authentication for the emulated NTAG215
-                // Extract password from the patched data (pages 133-134)
-                const passwordBytes = binData.slice(532, 536); // PWD
-                const packBytes = binData.slice(536, 538);     // PACK
-
-                // Configure password authentication (if supported by firmware)
-                try {
-                    // This might need specific command for NTAG password setup
-                    // The password is at page 133 (bytes 532-535)
-                    console.log('Setting NTAG215 password:', Array.from(passwordBytes).map(b => '0x' + b.toString(16).padStart(2, '0')).join(' '));
-                    console.log('Setting NTAG215 PACK:', Array.from(packBytes).map(b => '0x' + b.toString(16).padStart(2, '0')).join(' '));
-                } catch (e) {
-                    console.log('Password setup not available in this firmware version');
-                }
-
-                // Write all 135 pages directly from the .bin file
-                // The command format is: [start_page, num_pages, ...page_data]
                 for (let page = 0; page < 135; page++) {
                     try {
                         let pageData = binData.slice(page * 4, (page + 1) * 4);
-                        // Ensure we have exactly 4 bytes
                         if (pageData.length < 4) {
                             const paddedData = new Uint8Array(4);
                             paddedData.set(pageData);
@@ -2676,14 +2652,12 @@
                         }
                         const writeData = new Uint8Array(2 + pageData.length);
                         writeData[0] = page;
-                        writeData[1] = 1; // Write 1 page at a time
+                        writeData[1] = 1;
                         writeData.set(pageData, 2);
 
                         await this.sendCommand(CMD_MF0_NTAG_WRITE_EMU_PAGE_DATA, writeData);
 
-                        // Add small delay every 10 pages to prevent overwhelming the device
                         if (page % 10 === 0) {
-                            console.log(`Writing page ${page}/135`);
                             await new Promise(resolve => setTimeout(resolve, 10));
                         }
                     } catch (error) {
@@ -2692,59 +2666,52 @@
                     }
                 }
 
-                // NOW set up anti-collision AFTER all page data is written
-                // Extract UID properly: skip BCC at position 3
                 const uidForAntiColl = new Uint8Array(7);
-                uidForAntiColl[0] = fullUidWithBcc[0]; // uid0
-                uidForAntiColl[1] = fullUidWithBcc[1]; // uid1
-                uidForAntiColl[2] = fullUidWithBcc[2]; // uid2
-                uidForAntiColl[3] = fullUidWithBcc[4]; // uid3 (skip BCC at [3])
-                uidForAntiColl[4] = fullUidWithBcc[5]; // uid4
-                uidForAntiColl[5] = fullUidWithBcc[6]; // uid5
-                uidForAntiColl[6] = fullUidWithBcc[7]; // uid6
+                uidForAntiColl[0] = fullUidWithBcc[0];
+                uidForAntiColl[1] = fullUidWithBcc[1];
+                uidForAntiColl[2] = fullUidWithBcc[2];
+                uidForAntiColl[3] = fullUidWithBcc[4];
+                uidForAntiColl[4] = fullUidWithBcc[5];
+                uidForAntiColl[5] = fullUidWithBcc[6];
+                uidForAntiColl[6] = fullUidWithBcc[7];
 
-                console.log('Setting anti-collision UID:', Array.from(uidForAntiColl).map(b => '0x' + b.toString(16).padStart(2, '0')).join(' '));
-
-                const atqa = new Uint8Array([0x44, 0x00]); // Standard NTAG215 ATQA - send as [0x44, 0x00] to get exported as [0,68]
-                const sak = 0x00; // Standard NTAG215 SAK
-                const ats = new Uint8Array([]); // No ATS for NTAG215
+                const atqa = new Uint8Array([0x44, 0x00]);
+                const sak = 0x00;
+                const ats = new Uint8Array([]);
 
                 const antiCollData = new Uint8Array(1 + uidForAntiColl.length + atqa.length + 1 + 1 + ats.length);
                 let offset = 0;
-                antiCollData[offset++] = uidForAntiColl.length; // UID length
+                antiCollData[offset++] = uidForAntiColl.length;
                 antiCollData.set(uidForAntiColl, offset); offset += uidForAntiColl.length;
                 antiCollData.set(atqa, offset); offset += atqa.length;
                 antiCollData[offset++] = sak;
                 antiCollData[offset++] = ats.length;
                 if (ats.length > 0) antiCollData.set(ats, offset);
 
-                console.log('Anti-collision data:', Array.from(antiCollData).map(b => '0x' + b.toString(16).padStart(2, '0')).join(' '));
                 await this.sendCommand(CMD_MF1_SET_ANTICOLLISION, antiCollData);
-                console.log('Anti-collision setup completed after page writing');
+            }
+
+            async writeBinToSlot(slot, binData, name, signatureData = null, versionData = null) {
+                // First set the slot as active to ensure it's properly initialized
+                const activateSlotData = new Uint8Array([slot]);
+                await this.sendCommand(CMD_SET_ACTIVE_SLOT, activateSlotData);
+
+                // Use the new centralized method to write all the standard data
+                await this._writeAmiiboData(slot, binData, signatureData, versionData);
 
                 // Enable the slot for HF frequency
                 const enableSlotData = new Uint8Array([slot, TagFrequency.HF, 1]); // slot, frequency, enable(1)
                 await this.sendCommand(CMD_SET_SLOT_ENABLE, enableSlotData);
-                console.log(`✅ Slot ${slot} enabled for HF frequency`);
 
                 // Save the configuration FIRST before setting nickname
-                console.log(`💾 Saving slot data configuration...`);
                 await this.sendCommand(CMD_SLOT_DATA_CONFIG_SAVE);
-                console.log(`✅ Slot data configuration saved`);
-
-                // Add delay to ensure data is saved
                 await new Promise(resolve => setTimeout(resolve, 500));
 
                 // Now set the slot nickname AFTER saving the slot data
-                console.log(`📝 Setting slot ${slot} (displayed as Slot ${slot + 1} in UI) nickname to: "${name}"`);
                 const textEncoder = new TextEncoder();
                 let nameBytes = textEncoder.encode(name);
-
-                // Ensure name isn't too long
-                const maxNameLength = 32; // Some devices have a 32-byte limit for nicknames
+                const maxNameLength = 32;
                 if (nameBytes.length > maxNameLength) {
-                    console.log(`⚠️ Name too long (${nameBytes.length} bytes), truncating to ${maxNameLength} bytes`);
-                    // Try to truncate at a character boundary
                     let truncatedName = name.substring(0, maxNameLength);
                     nameBytes = textEncoder.encode(truncatedName);
                     while (nameBytes.length > maxNameLength) {
@@ -2753,84 +2720,16 @@
                     }
                 }
 
-                console.log(`📝 Name bytes (${nameBytes.length}):`, Array.from(nameBytes).map(b => b.toString(16).padStart(2, '0')).join(' '));
-
-                // NEW APPROACH: Try activating the slot first to ensure it's ready
-                console.log(`🎯 Activating slot ${slot} before setting nickname...`);
-                const activateSlotForNickData = new Uint8Array([slot]);
-                await this.sendCommand(CMD_SET_ACTIVE_SLOT, activateSlotForNickData);
-                await new Promise(resolve => setTimeout(resolve, 100));
-
-                // Clear any existing nickname first by setting empty name
-                console.log(`🧹 Clearing existing nickname...`);
-                const clearNameData = new Uint8Array(2);
-                clearNameData[0] = slot;
-                clearNameData[1] = TagFrequency.HF;
-                await this.sendCommand(CMD_SET_SLOT_TAG_NICK, clearNameData);
-                await this.sendCommand(CMD_SLOT_DATA_CONFIG_SAVE);
-                await new Promise(resolve => setTimeout(resolve, 200));
-
-                // Now set the new nickname
                 const setNameData = new Uint8Array(2 + nameBytes.length);
                 setNameData[0] = slot;
-                setNameData[1] = TagFrequency.HF; // HF frequency
+                setNameData[1] = TagFrequency.HF;
                 setNameData.set(nameBytes, 2);
-
-                console.log(`📝 Sending CMD_SET_SLOT_TAG_NICK with data:`, Array.from(setNameData).map(b => b.toString(16).padStart(2, '0')).join(' '));
                 await this.sendCommand(CMD_SET_SLOT_TAG_NICK, setNameData);
-                console.log(`✅ Slot nickname set successfully`);
 
-                // Save configuration multiple times with longer delays
-                console.log(`💾 Saving nickname configuration (attempt 1)...`);
+                // Save configuration again to make sure nickname sticks
                 await this.sendCommand(CMD_SLOT_DATA_CONFIG_SAVE);
                 await new Promise(resolve => setTimeout(resolve, 300));
 
-                console.log(`💾 Saving nickname configuration (attempt 2)...`);
-                await this.sendCommand(CMD_SLOT_DATA_CONFIG_SAVE);
-                await new Promise(resolve => setTimeout(resolve, 300));
-
-                console.log(`💾 Saving nickname configuration (attempt 3)...`);
-                await this.sendCommand(CMD_SLOT_DATA_CONFIG_SAVE);
-                console.log(`✅ Nickname configuration saved successfully`);
-
-                // Add longer delay to ensure device has processed the nickname setting
-                await new Promise(resolve => setTimeout(resolve, 1000));
-
-                // Verify the nickname was saved by reading it back multiple times
-                let verificationAttempts = 3;
-                for (let attempt = 1; attempt <= verificationAttempts; attempt++) {
-                    try {
-                        console.log(`🔍 Verifying nickname was saved (attempt ${attempt})...`);
-                        const verifyResponse = await this.sendCommand(CMD_GET_SLOT_TAG_NICK, new Uint8Array([slot, TagFrequency.HF]));
-
-                        // The response should be the UTF-8 string directly
-                        let savedName = '';
-                        if (verifyResponse.byteLength > 0) {
-                            savedName = new TextDecoder().decode(new Uint8Array(verifyResponse.buffer, verifyResponse.byteOffset, verifyResponse.byteLength));
-                        }
-
-                        console.log(`✅ Verified nickname (attempt ${attempt}): "${savedName}"`);
-                        if (savedName && (savedName === name || name.startsWith(savedName))) {
-                            console.log(`🎉 Nickname verification successful!`);
-                            break;
-                        } else {
-                            console.warn(`⚠️ Nickname mismatch on attempt ${attempt}! Expected: "${name}", Got: "${savedName}"`);
-                            if (attempt < verificationAttempts) {
-                                // Try setting it again
-                                console.log(`🔄 Retrying nickname setting...`);
-                                await this.sendCommand(CMD_SET_SLOT_TAG_NICK, setNameData);
-                                await this.sendCommand(CMD_SLOT_DATA_CONFIG_SAVE);
-                                await new Promise(resolve => setTimeout(resolve, 500));
-                            }
-                        }
-                    } catch (verifyError) {
-                        console.warn(`⚠️ Failed to verify nickname (attempt ${attempt}):`, verifyError.message);
-                    }
-                }
-
-                console.log(`📝 Slot ${slot} (displayed as Slot ${slot + 1} in UI) setup completed with nickname: "${name}"`);
-
-                // Clear cache for this slot since new data was written
                 clearSlotCache(slot);
             }
         }
@@ -3237,45 +3136,18 @@
                 slotLinks.appendChild(generateLi);
             }
 
-            // Randomize UID link - available for non-empty slots and only when keys are loaded
+            // Randomize link - available for non-empty slots and only when keys are loaded
             if (!isEmpty && keysLoaded && maboiiKeys) {
-                const randomizeUidLi = document.createElement('li');
-                const randomizeUidLink = document.createElement('a');
-                randomizeUidLink.href = '#';
-                randomizeUidLink.textContent = 'Randomize UID';
-                randomizeUidLink.addEventListener('click', (e) => {
+                const randomizeLi = document.createElement('li');
+                const randomizeLink = document.createElement('a');
+                randomizeLink.href = '#';
+                randomizeLink.textContent = 'Randomize';
+                randomizeLink.addEventListener('click', (e) => {
                     e.preventDefault();
-                    // Extract amiibo ID directly from the card display
-                    const slotCard = e.target.closest('.slot');
-                    let amiiboId = null;
-                    if (slotCard) {
-                        const slotSummary = slotCard.querySelector('.slot-summary');
-                        if (slotSummary) {
-                            // Look for "Amiibo ID: XXXXXXXXXXXXXXXX" in the HTML content
-                            const match = slotSummary.innerHTML.match(/Amiibo ID:<\/strong>\s*([A-F0-9]{16})/i);
-                            if (match) {
-                                amiiboId = match[1];
-                            }
-                        }
-                    }
-                    randomizeSlotUID(slotIndex, slotName, amiiboId);
+                    openRandomizeModal(slotIndex, slotName);
                 });
-                randomizeUidLi.appendChild(randomizeUidLink);
-                slotLinks.appendChild(randomizeUidLi);
-
-                // Add Randomize & Emulate link
-                const randomizeEmulateLi = document.createElement('li');
-                const randomizeEmulateLink = document.createElement('a');
-                randomizeEmulateLink.href = '#';
-                randomizeEmulateLink.textContent = 'Randomize & Emulate';
-                randomizeEmulateLink.style.color = '#28a745'; // Green color for emulate actions
-                randomizeEmulateLink.style.display = 'none'; // Hide for now
-                randomizeEmulateLink.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    randomizeAndEmulate(slotIndex, slotName);
-                });
-                randomizeEmulateLi.appendChild(randomizeEmulateLink);
-                slotLinks.appendChild(randomizeEmulateLi);
+                randomizeLi.appendChild(randomizeLink);
+                slotLinks.appendChild(randomizeLi);
             }
 
             slotCard.appendChild(slotLinks);
@@ -4142,25 +4014,28 @@
                 setStatus('Please select an Amiibo.', 'error');
                 return;
             }
-            const slot = parseInt(slotSelect.value, 10); // Get value from select
-            if (slot < 0 || slot > 7) { // Slot values are 0-7
+            const slot = parseInt(slotSelect.value, 10);
+            if (slot < 0 || slot > 7) {
                 setStatus('Invalid slot number.', 'error');
                 return;
             }
             try {
                 showUploadProgress('Generating Amiibo...', 20, 'Creating encrypted amiibo data', 'Emulating Amiibo');
 
-                updateUploadProgress('Processing amiibo data...', 50, 'Creating emulation template');
-                // Generate fresh Amiibo bin
                 const generatedAmiiboBin = await generateAmiiboBin();
+                const binData = {
+                    fullData: generatedAmiiboBin.template,
+                    uid: generatedAmiiboBin.uid,
+                    ultralightVersion: new Uint8Array([0, 4, 4, 2, 1, 0, 17, 3])
+                };
 
                 updateUploadProgress('Starting emulation...', 90, `Emulating ${selectedAmiiboDetails.name} on slot ${slot + 1}`);
-                await ultra.emulateNtag215(slot, generatedAmiiboBin.template, generatedAmiiboBin.uid);
+                await ultra.emulateBinToSlot(slot, binData.fullData, selectedAmiiboDetails.name, null, binData.ultralightVersion);
 
-                updateUploadProgress('Emulation started!', 100, 'Legal Amiibo emulation is active!');
+                updateUploadProgress('Emulation started!', 100, 'Legal Amiibo emulation is now active!');
                 setTimeout(() => {
                     hideUploadProgress();
-                    closeModal(); // Close modal after successful emulate
+                    closeModal();
                     setUploadStatus(`Successfully started emulating ${selectedAmiiboDetails.name} on slot ${slot + 1}`, 'success');
                 }, 1000);
             } catch (error) {
@@ -4235,13 +4110,20 @@
                 setSlotStatus('Generating and emulating...');
                 const forceRandom = slotRandomUidToggle.checked;
                 const { pageData, uid } = await generateAmiiboData(selectedSlotAmiiboDetails, forceRandom);
-                await ultra.emulateNtag215(selectedSlotIndex, pageData, uid);
+                const binData = {
+                    fullData: pageData,
+                    uid: uid,
+                    ultralightVersion: new Uint8Array([0, 4, 4, 2, 1, 0, 17, 3])
+                };
+
+                await ultra.emulateBinToSlot(selectedSlotIndex, binData.fullData, selectedSlotAmiiboDetails.name, null, binData.ultralightVersion);
+
                 setSlotStatus('Emulation started!', 'success');
-                await refreshSingleSlotDisplay(selectedSlotIndex); // Refresh just this slot
+                await refreshSingleSlotDisplay(selectedSlotIndex);
                 if (allAmiibos.length > 0) {
                     await enhanceSingleSlotWithAmiiboInfo(selectedSlotIndex);
                 }
-                closeSlotModal(); // Close modal after successful emulate
+                closeSlotModal();
             } catch (error) {
                 console.error('Emulation Error:', error);
                 setSlotStatus('Emulation failed.', 'error');
@@ -4467,10 +4349,10 @@
             }
 
             let finalData = parsedData.fullData;
-            let uid = parsedData.uid;
+            let signature = parsedData.signatureData;
+            let version = parsedData.ultralightVersion;
             let name = file.name.replace(/\.[^/.]+$/, ""); // Remove extension
 
-            // Only attempt randomization if keys are available
             if (randomize) {
                 if (!keysLoaded || !maboiiKeys) {
                     throw new Error('Retail keys are required for UID randomization');
@@ -4478,28 +4360,27 @@
 
                 updateUploadProgress('Randomizing UID...', 60, 'Re-encrypting with new random UID');
 
-                // Extract amiibo ID for re-encryption
                 const amiiboIdHex = extractAmiiboIdFromBinData(finalData);
                 if (!amiiboIdHex || amiiboIdHex === '0000000000000000') {
                     throw new Error('Cannot extract amiibo ID for re-encryption');
                 }
 
-                // Generate completely new encrypted amiibo with same ID but new UID
                 const generatedData = await generateEncryptedAmiiboData(amiiboIdHex);
                 finalData = generatedData.pageData;
-                uid = generatedData.uid;
+                signature = null; // Generated data doesn't have a separate signature
+                version = new Uint8Array([0, 4, 4, 2, 1, 0, 17, 3]);
                 name += ` (New UID)`;
             }
 
             updateUploadProgress('Starting emulation...', 90, `Emulating ${name} on slot ${slot + 1}`);
-            await ultra.emulateNtag215(slot, finalData, uid);
+            await ultra.emulateBinToSlot(slot, finalData, name, signature, version);
 
             updateUploadProgress('Emulation started!', 100, 'Amiibo emulation is now active!');
 
             setTimeout(() => {
                 hideUploadProgress();
                 setUploadStatus(`Successfully started emulating ${name} on slot ${slot + 1}`, 'success');
-                refreshSingleSlotDisplay(slot); // Refresh just this slot
+                refreshSingleSlotDisplay(slot);
             }, 1500);
         }
 
@@ -4840,27 +4721,23 @@
                 showUploadProgress('Generating amiibo...', 20, 'Creating encrypted amiibo data', 'Generating & Emulating Amiibo');
 
                 updateUploadProgress('Processing amiibo data...', 50, 'Encrypting amiibo information');
-                // Generate the amiibo data using our V3 method (always uses random UID)
                 const amiiboId = getAmiiboId(selectedAmiiboForGeneration);
                 const generatedData = await generateEncryptedAmiiboData(amiiboId);
 
                 updateUploadProgress('Starting emulation...', 90, `Emulating ${selectedAmiiboForGeneration.name} on slot ${generateTargetSlot + 1}`);
-                // Use emulateNtag215 instead of writeBinToSlot
-                await ultra.emulateNtag215(generateTargetSlot, generatedData.pageData, generatedData.uid);
+                await ultra.emulateBinToSlot(generateTargetSlot, generatedData.pageData, selectedAmiiboForGeneration.name, null, new Uint8Array([0, 4, 4, 2, 1, 0, 17, 3]));
 
                 updateUploadProgress('Emulation started!', 100, 'Generated Amiibo emulation is now active!');
 
-                // Store values before closing modal since closeGenerateModal() sets them to null
                 const amiiboName = selectedAmiiboForGeneration.name;
                 const slotNumber = generateTargetSlot + 1;
-                const targetSlotIndex = generateTargetSlot;  // Store the 0-based index
+                const targetSlotIndex = generateTargetSlot;
 
                 setTimeout(async () => {
                     hideUploadProgress();
                     closeGenerateModal();
                     setUploadStatus(`Successfully started emulating ${amiiboName} on slot ${slotNumber}`, 'success');
-                    console.log(`Refreshing slot ${targetSlotIndex} after generate & emulate`);
-                    await refreshSingleSlotDisplay(targetSlotIndex); // Use the stored 0-based slot index
+                    await refreshSingleSlotDisplay(targetSlotIndex);
                     if (allAmiibos.length > 0) {
                         await enhanceSingleSlotWithAmiiboInfo(targetSlotIndex);
                     }
@@ -5183,7 +5060,8 @@
 
             if (collections.length === 0) {
                 listContainer.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">No saved collections</p>';
-                document.getElementById('load-collection-confirm-btn').disabled = true;
+                document.getElementById('load-collection-write-btn').disabled = true;
+                document.getElementById('load-collection-emulate-btn').disabled = true;
                 return;
             }
 
@@ -5207,7 +5085,8 @@
                     // Add selected class to clicked item
                     item.classList.add('selected');
                     selectedCollectionId = collection.id;
-                    document.getElementById('load-collection-confirm-btn').disabled = false;
+                    document.getElementById('load-collection-write-btn').disabled = false;
+                    document.getElementById('load-collection-emulate-btn').disabled = false;
                 });
 
                 listContainer.appendChild(item);
@@ -5231,7 +5110,8 @@
         document.getElementById('load-collection-btn').addEventListener('click', () => {
             selectedCollectionId = null;
             renderCollectionsList();
-            document.getElementById('load-collection-confirm-btn').disabled = true;
+            document.getElementById('load-collection-write-btn').disabled = true;
+            document.getElementById('load-collection-emulate-btn').disabled = true;
             document.getElementById('loadCollectionModal').style.display = 'flex';
         });
 
@@ -5248,6 +5128,61 @@
             saveCollection();
         });
 
+        async function emulateCollection(collectionId) {
+            const collections = getCollections();
+            const collection = collections.find(c => c.id === collectionId);
+
+            if (!collection) {
+                setUploadStatus('Collection not found', 'error');
+                return;
+            }
+
+            if (!ultra || !ultra.device || !ultra.device.gatt.connected) {
+                setUploadStatus('Please connect to Chameleon Ultra first', 'error');
+                return;
+            }
+
+            let successCount = 0;
+            let failCount = 0;
+
+            showUploadProgress('Emulating Collection...', 0, `Loading ${collection.name}`, 'Emulating Collection');
+
+            const totalAmiibos = collection.amiibos.length;
+            for (let i = 0; i < totalAmiibos; i++) {
+                const amiiboData = collection.amiibos[i];
+                try {
+                    const amiibo = findAmiiboByID(amiiboData.amiiboId);
+                    if (amiibo) {
+                        const progress = Math.round(((i + 1) / totalAmiibos) * 100);
+                        updateUploadProgress(`Emulating amiibo ${i + 1}/${totalAmiibos}...`, progress, `Emulating ${amiibo.name} on slot ${amiiboData.slotIndex + 1}`);
+
+                        const generatedData = await generateEncryptedAmiiboData(amiiboData.amiiboId);
+                        await ultra.emulateBinToSlot(amiiboData.slotIndex, generatedData.pageData, amiibo.name, null, new Uint8Array([0, 4, 4, 2, 1, 0, 17, 3]));
+                        successCount++;
+                    } else {
+                        failCount++;
+                    }
+                } catch (error) {
+                    console.error(`Error emulating amiibo to slot ${amiiboData.slotIndex}:`, error);
+                    failCount++;
+                }
+            }
+
+            await refreshAmiiboSlots();
+            await enhanceSlotCardsWithAmiiboInfo();
+
+            setTimeout(() => {
+                hideUploadProgress();
+                document.getElementById('loadCollectionModal').style.display = 'none';
+
+                if (failCount === 0) {
+                    setUploadStatus(`Collection "${collection.name}" is now being emulated`, 'success');
+                } else {
+                    setUploadStatus(`Collection emulated with errors: ${successCount} success, ${failCount} failed`, 'error');
+                }
+            }, 1000);
+        }
+
         // Load collection modal buttons
         document.getElementById('load-collection-close-button').addEventListener('click', () => {
             document.getElementById('loadCollectionModal').style.display = 'none';
@@ -5257,10 +5192,16 @@
             document.getElementById('loadCollectionModal').style.display = 'none';
         });
 
-        document.getElementById('load-collection-confirm-btn').addEventListener('click', () => {
+        document.getElementById('load-collection-write-btn').addEventListener('click', () => {
             if (selectedCollectionId) {
                 const clearUnused = document.getElementById('clear-unused-slots-checkbox').checked;
                 loadCollection(selectedCollectionId, clearUnused);
+            }
+        });
+
+        document.getElementById('load-collection-emulate-btn').addEventListener('click', () => {
+            if (selectedCollectionId) {
+                emulateCollection(selectedCollectionId);
             }
         });
 
