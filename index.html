@@ -190,6 +190,12 @@
         .status-error {
             color: #dc3545;
         }
+        #collections-section {
+            width: 100%;
+            max-width: 800px;
+            display: none;
+            margin-bottom: 30px;
+        }
         #amiibo-slots {
             width: 100%;
             max-width: 800px;
@@ -202,6 +208,120 @@
             padding: 15px;
             margin-bottom: 15px;
             box-shadow: 0 1px 1px rgba(0,0,0,.05);
+        }
+
+        .collection-item {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .collection-item:hover {
+            background-color: #e9ecef;
+        }
+
+        .collection-item.selected {
+            background-color: #cfe2ff;
+            border-color: #9ec5fe;
+        }
+
+        .collection-info {
+            flex-grow: 1;
+        }
+
+        .collection-name {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 3px;
+        }
+
+        .collection-description {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .collection-count {
+            font-size: 12px;
+            color: #888;
+            margin-top: 3px;
+        }
+
+        .collection-delete {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .collection-delete:hover {
+            background-color: #c82333;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-group input[type="text"],
+        .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 8px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .checkbox-group label {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .collections-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 15px;
         }
 
         .slot {
@@ -457,6 +577,17 @@
             <div id="upload-status" style="font-weight: bold; margin-bottom: 20px; padding: 10px; border-radius: 4px;"></div>
         </div>
 
+        <div id="collections-section">
+            <h2>Collections</h2>
+            <div style="margin-bottom: 20px;">
+                <button id="save-collection-btn">Save Collection</button>
+                <button id="load-collection-btn">Load Collection</button>
+                <button id="export-collections-btn">Export All</button>
+                <button id="import-collections-btn">Import</button>
+                <input type="file" id="import-collections-input" accept=".json" style="display: none;">
+            </div>
+        </div>
+
         <div id="amiibo-slots">
             <h2>Amiibo Tags</h2>
             <div id="amiibo-slots-list"></div>
@@ -593,6 +724,65 @@
             </div>
 
             <div id="upload-modal-status" style="margin-top: 15px; padding: 10px; border-radius: 4px; display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Save Collection Modal -->
+    <div id="saveCollectionModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <span class="close-button" id="save-collection-close-button">&times;</span>
+            <h3>Save Collection</h3>
+
+            <div class="form-group">
+                <label for="collection-name-input">Collection Name</label>
+                <input type="text" id="collection-name-input" placeholder="Enter collection name" maxlength="50">
+            </div>
+
+            <div class="form-group">
+                <label for="collection-description-input">Description (optional)</label>
+                <textarea id="collection-description-input" placeholder="Enter a description for this collection" maxlength="200"></textarea>
+            </div>
+
+            <div class="modal-buttons">
+                <button id="save-collection-cancel-btn" style="background-color: #6c757d;">Cancel</button>
+                <button id="save-collection-confirm-btn">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load Collection Modal -->
+    <div id="loadCollectionModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <span class="close-button" id="load-collection-close-button">&times;</span>
+            <h3>Load Collection</h3>
+
+            <div class="collections-list" id="collections-list">
+                <!-- Collections will be dynamically added here -->
+            </div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="clear-unused-slots-checkbox" checked>
+                <label for="clear-unused-slots-checkbox">Clear unused slots (if collection has fewer than 8 amiibo)</label>
+            </div>
+
+            <div class="modal-buttons">
+                <button id="load-collection-cancel-btn" style="background-color: #6c757d;">Cancel</button>
+                <button id="load-collection-confirm-btn" disabled>Load</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Collection Confirmation Modal -->
+    <div id="deleteCollectionModal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <span class="close-button" id="delete-collection-close-button">&times;</span>
+            <h3>Delete Collection</h3>
+            <p>Are you sure you want to delete <strong id="delete-collection-name">this collection</strong>?</p>
+            <p style="color: #666; font-size: 0.9em;">This action cannot be undone.</p>
+            <div class="modal-buttons">
+                <button id="delete-collection-cancel-btn" style="background-color: #6c757d;">Cancel</button>
+                <button id="delete-collection-confirm-btn" style="background-color: #dc3545;">Delete</button>
+            </div>
         </div>
     </div>
 
@@ -2838,6 +3028,7 @@
             if (!ultra || !ultra.device || !ultra.device.gatt.connected) {
                 debugLog('❌ Device not connected, hiding slots');
                 amiiboSlotsDiv.style.display = 'none';
+                document.getElementById('collections-section').style.display = 'none';
                 return;
             }
 
@@ -2890,6 +3081,7 @@
                 }
 
                 amiiboSlotsDiv.style.display = 'block'; // Always show slots section
+                document.getElementById('collections-section').style.display = 'block'; // Show collections section
 
                 // Ensure the visual selection indicators are properly set for the active slot
                 updateSlotSelectionIndicators(activeSlot);
@@ -3829,18 +4021,25 @@
             const amiiboId = getAmiiboId(selectedAmiiboDetails);
             const amiiboName = selectedAmiiboDetails.name;
 
-            // Generate Amiibo bin using our legal template + API data
-            const generatedBin = createAmiiboFromTemplate(amiiboId, amiiboName);
+            // Generate encrypted amiibo using maboii.js
+            const generatedData = await generateEncryptedAmiiboData(amiiboId);
 
             console.log('Generated Amiibo bin:', {
                 name: amiiboName,
                 id: amiiboId,
-                uid: generatedBin.info.uidHex,
-                password: generatedBin.info.passwordHex,
-                encrypted: true // Uses working encrypted template
+                uid: generatedData.uid.map(b => b.toString(16).padStart(2, '0')).join(''),
+                encrypted: true
             });
 
-            return generatedBin;
+            return {
+                template: generatedData.pageData,
+                uid: generatedData.uid,
+                amiiboId: amiiboId,
+                amiiboName: amiiboName,
+                info: {
+                    uidHex: generatedData.uid.map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase()
+                }
+            };
         }
 
         downloadAmiiboBtn.addEventListener('click', async () => {
@@ -4749,6 +4948,470 @@
         // Initialize recent amiibos and favorites
         loadRecentAmiibos();
         loadFavoriteAmiibos();
+
+        // ========================================
+        // Collections Management
+        // ========================================
+
+        const COLLECTIONS_STORAGE_KEY = 'chameleon-ultra-amiibo-collections';
+        let selectedCollectionId = null;
+
+        // Get all collections from localStorage
+        function getCollections() {
+            try {
+                const collectionsJson = localStorage.getItem(COLLECTIONS_STORAGE_KEY);
+                return collectionsJson ? JSON.parse(collectionsJson) : [];
+            } catch (error) {
+                console.error('Error loading collections:', error);
+                return [];
+            }
+        }
+
+        // Save collections to localStorage
+        function saveCollections(collections) {
+            try {
+                localStorage.setItem(COLLECTIONS_STORAGE_KEY, JSON.stringify(collections));
+            } catch (error) {
+                console.error('Error saving collections:', error);
+                setUploadStatus('Failed to save collections', 'error');
+            }
+        }
+
+        // Get current slot data for all 8 slots
+        async function getCurrentSlotData() {
+            const slots = [];
+            for (let i = 0; i < 8; i++) {
+                const slotName = currentSlotNames[i] || '';
+                if (slotName && slotName !== 'Empty') {
+                    // Try to get amiibo ID from cache first
+                    if (slotDataCache[i] && slotDataCache[i].amiiboId) {
+                        slots.push({
+                            index: i,
+                            amiiboId: slotDataCache[i].amiiboId,
+                            name: slotName
+                        });
+                    }
+                }
+            }
+            return slots;
+        }
+
+        // Save current slots as a collection
+        async function saveCollection() {
+            const name = document.getElementById('collection-name-input').value.trim();
+            const description = document.getElementById('collection-description-input').value.trim();
+
+            if (!name) {
+                setUploadStatus('Please enter a collection name', 'error');
+                return;
+            }
+
+            // Get current slot data
+            const slots = await getCurrentSlotData();
+
+            if (slots.length === 0) {
+                setUploadStatus('No amiibo found in slots to save', 'error');
+                return;
+            }
+
+            // Create collection object
+            const collection = {
+                id: Date.now().toString(),
+                name: name,
+                description: description,
+                amiibos: slots.map(slot => ({
+                    slotIndex: slot.index,
+                    amiiboId: slot.amiiboId,
+                    name: slot.name
+                })),
+                created: new Date().toISOString(),
+                modified: new Date().toISOString()
+            };
+
+            // Get existing collections and add new one
+            const collections = getCollections();
+            collections.push(collection);
+            saveCollections(collections);
+
+            // Close modal and reset form
+            document.getElementById('saveCollectionModal').style.display = 'none';
+            document.getElementById('collection-name-input').value = '';
+            document.getElementById('collection-description-input').value = '';
+
+            setUploadStatus(`Collection "${name}" saved successfully`, 'success');
+        }
+
+        // Load a collection and apply it to slots
+        async function loadCollection(collectionId, clearUnusedSlots) {
+            const collections = getCollections();
+            const collection = collections.find(c => c.id === collectionId);
+
+            if (!collection) {
+                setUploadStatus('Collection not found', 'error');
+                return;
+            }
+
+            if (!ultra || !ultra.device || !ultra.device.gatt.connected) {
+                setUploadStatus('Please connect to Chameleon Ultra first', 'error');
+                return;
+            }
+
+            let successCount = 0;
+            let failCount = 0;
+
+            // Show progress
+            showUploadProgress('Loading Collection...', 0, `Loading ${collection.name}`, 'Loading Collection');
+
+            // Load each amiibo in the collection
+            const totalAmiibos = collection.amiibos.length;
+            for (let i = 0; i < totalAmiibos; i++) {
+                const amiiboData = collection.amiibos[i];
+                try {
+                    // Find the amiibo using the existing findAmiiboByID function
+                    const amiibo = findAmiiboByID(amiiboData.amiiboId);
+
+                    if (amiibo) {
+                        const progress = Math.round(((i + 1) / totalAmiibos) * 90);
+                        updateUploadProgress(`Writing amiibo ${i + 1}/${totalAmiibos}...`, progress, `Writing ${amiibo.name} to slot ${amiiboData.slotIndex + 1}`);
+
+                        // Generate fresh encrypted amiibo data
+                        const generatedData = await generateEncryptedAmiiboData(amiiboData.amiiboId);
+
+                        // Write directly to slot
+                        await ultra.writeBinToSlot(
+                            amiiboData.slotIndex,
+                            generatedData.pageData,
+                            amiibo.name,
+                            null,
+                            new Uint8Array([0, 4, 4, 2, 1, 0, 17, 3])
+                        );
+
+                        successCount++;
+                    } else {
+                        console.warn(`Amiibo ${amiiboData.amiiboId} not found in database`);
+                        failCount++;
+                    }
+                } catch (error) {
+                    console.error(`Error loading amiibo to slot ${amiiboData.slotIndex}:`, error);
+                    failCount++;
+                }
+            }
+
+            // Clear unused slots if requested
+            if (clearUnusedSlots && collection.amiibos.length < 8) {
+                updateUploadProgress('Clearing unused slots...', 95, 'Clearing empty slots');
+                const usedSlots = collection.amiibos.map(a => a.slotIndex);
+                for (let i = 0; i < 8; i++) {
+                    if (!usedSlots.includes(i)) {
+                        try {
+                            await clearSlot(i);
+                        } catch (error) {
+                            console.error(`Error clearing slot ${i}:`, error);
+                        }
+                    }
+                }
+            }
+
+            updateUploadProgress('Complete!', 100, 'Refreshing slots display');
+
+            // Refresh slot data and enhance with amiibo info
+            await refreshAmiiboSlots();
+            await enhanceSlotCardsWithAmiiboInfo();
+
+            // Hide progress and close modal
+            setTimeout(() => {
+                hideUploadProgress();
+                document.getElementById('loadCollectionModal').style.display = 'none';
+
+                // Show result status
+                if (failCount === 0) {
+                    setUploadStatus(`Collection "${collection.name}" loaded successfully (${successCount} amiibo)`, 'success');
+                } else {
+                    setUploadStatus(`Collection loaded with errors: ${successCount} success, ${failCount} failed`, 'error');
+                }
+            }, 1000);
+        }
+
+        // Show delete collection confirmation modal
+        function showDeleteCollectionModal(collectionId) {
+            const collections = getCollections();
+            const collection = collections.find(c => c.id === collectionId);
+
+            if (!collection) {
+                return;
+            }
+
+            // Set the collection name in the modal
+            document.getElementById('delete-collection-name').textContent = collection.name;
+
+            // Store the collection ID for deletion
+            document.getElementById('delete-collection-confirm-btn').dataset.collectionId = collectionId;
+
+            // Show the modal
+            document.getElementById('deleteCollectionModal').style.display = 'flex';
+        }
+
+        // Delete a collection
+        function deleteCollection(collectionId) {
+            const collections = getCollections();
+            const collection = collections.find(c => c.id === collectionId);
+
+            if (!collection) {
+                return;
+            }
+
+            const filteredCollections = collections.filter(c => c.id !== collectionId);
+            saveCollections(filteredCollections);
+
+            // Close the delete modal
+            document.getElementById('deleteCollectionModal').style.display = 'none';
+
+            // Refresh the collections list if modal is open
+            if (document.getElementById('loadCollectionModal').style.display === 'flex') {
+                renderCollectionsList();
+            }
+
+            setUploadStatus(`Collection "${collection.name}" deleted`, 'success');
+        }
+
+        // Render collections list in the load modal
+        function renderCollectionsList() {
+            const collections = getCollections();
+            const listContainer = document.getElementById('collections-list');
+
+            listContainer.innerHTML = '';
+
+            if (collections.length === 0) {
+                listContainer.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">No saved collections</p>';
+                document.getElementById('load-collection-confirm-btn').disabled = true;
+                return;
+            }
+
+            collections.forEach(collection => {
+                const item = document.createElement('div');
+                item.className = 'collection-item';
+                item.dataset.collectionId = collection.id;
+
+                item.innerHTML = `
+                    <div class="collection-info">
+                        <div class="collection-name">${escapeHtml(collection.name)}</div>
+                        ${collection.description ? `<div class="collection-description">${escapeHtml(collection.description)}</div>` : ''}
+                        <div class="collection-count">${collection.amiibos.length} amiibo</div>
+                    </div>
+                    <button class="collection-delete" onclick="event.stopPropagation(); showDeleteCollectionModal('${collection.id}')">Delete</button>
+                `;
+
+                item.addEventListener('click', () => {
+                    // Remove selected class from all items
+                    document.querySelectorAll('.collection-item').forEach(el => el.classList.remove('selected'));
+                    // Add selected class to clicked item
+                    item.classList.add('selected');
+                    selectedCollectionId = collection.id;
+                    document.getElementById('load-collection-confirm-btn').disabled = false;
+                });
+
+                listContainer.appendChild(item);
+            });
+        }
+
+        // Helper function to escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Event listeners for collection buttons and modals
+        document.getElementById('save-collection-btn').addEventListener('click', () => {
+            document.getElementById('collection-name-input').value = '';
+            document.getElementById('collection-description-input').value = '';
+            document.getElementById('saveCollectionModal').style.display = 'flex';
+        });
+
+        document.getElementById('load-collection-btn').addEventListener('click', () => {
+            selectedCollectionId = null;
+            renderCollectionsList();
+            document.getElementById('load-collection-confirm-btn').disabled = true;
+            document.getElementById('loadCollectionModal').style.display = 'flex';
+        });
+
+        // Save collection modal buttons
+        document.getElementById('save-collection-close-button').addEventListener('click', () => {
+            document.getElementById('saveCollectionModal').style.display = 'none';
+        });
+
+        document.getElementById('save-collection-cancel-btn').addEventListener('click', () => {
+            document.getElementById('saveCollectionModal').style.display = 'none';
+        });
+
+        document.getElementById('save-collection-confirm-btn').addEventListener('click', () => {
+            saveCollection();
+        });
+
+        // Load collection modal buttons
+        document.getElementById('load-collection-close-button').addEventListener('click', () => {
+            document.getElementById('loadCollectionModal').style.display = 'none';
+        });
+
+        document.getElementById('load-collection-cancel-btn').addEventListener('click', () => {
+            document.getElementById('loadCollectionModal').style.display = 'none';
+        });
+
+        document.getElementById('load-collection-confirm-btn').addEventListener('click', () => {
+            if (selectedCollectionId) {
+                const clearUnused = document.getElementById('clear-unused-slots-checkbox').checked;
+                loadCollection(selectedCollectionId, clearUnused);
+            }
+        });
+
+        // Delete collection modal buttons
+        document.getElementById('delete-collection-close-button').addEventListener('click', () => {
+            document.getElementById('deleteCollectionModal').style.display = 'none';
+        });
+
+        document.getElementById('delete-collection-cancel-btn').addEventListener('click', () => {
+            document.getElementById('deleteCollectionModal').style.display = 'none';
+        });
+
+        document.getElementById('delete-collection-confirm-btn').addEventListener('click', () => {
+            const collectionId = document.getElementById('delete-collection-confirm-btn').dataset.collectionId;
+            if (collectionId) {
+                deleteCollection(collectionId);
+            }
+        });
+
+        // Export all collections to JSON file
+        function exportCollections() {
+            const collections = getCollections();
+
+            if (collections.length === 0) {
+                setUploadStatus('No collections to export', 'error');
+                return;
+            }
+
+            // Create export data with metadata
+            const exportData = {
+                version: '1.0',
+                exportDate: new Date().toISOString(),
+                collectionCount: collections.length,
+                collections: collections
+            };
+
+            // Convert to JSON and create blob
+            const jsonString = JSON.stringify(exportData, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+
+            // Create download link
+            const a = document.createElement('a');
+            a.href = url;
+            const timestamp = new Date().toISOString().split('T')[0];
+            a.download = `amiibo-collections-${timestamp}.json`;
+
+            // Trigger download
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            setUploadStatus(`Exported ${collections.length} collection(s) successfully`, 'success');
+        }
+
+        // Import collections from JSON file
+        function importCollections(file) {
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+                try {
+                    const importData = JSON.parse(e.target.result);
+
+                    // Validate import data
+                    if (!importData.collections || !Array.isArray(importData.collections)) {
+                        setUploadStatus('Invalid collections file format', 'error');
+                        return;
+                    }
+
+                    const existingCollections = getCollections();
+                    let importedCount = 0;
+                    let skippedCount = 0;
+
+                    // Import each collection
+                    importData.collections.forEach(collection => {
+                        // Check if collection already exists (by name)
+                        const exists = existingCollections.some(c => c.name === collection.name);
+
+                        if (exists) {
+                            skippedCount++;
+                        } else {
+                            // Generate new ID and timestamps
+                            collection.id = Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9);
+                            collection.created = collection.created || new Date().toISOString();
+                            collection.modified = new Date().toISOString();
+                            existingCollections.push(collection);
+                            importedCount++;
+                        }
+                    });
+
+                    // Save updated collections
+                    saveCollections(existingCollections);
+
+                    // Show status
+                    if (skippedCount > 0) {
+                        setUploadStatus(`Imported ${importedCount} collection(s), skipped ${skippedCount} duplicate(s)`, 'success');
+                    } else {
+                        setUploadStatus(`Imported ${importedCount} collection(s) successfully`, 'success');
+                    }
+
+                    // Refresh the collections list if load modal is open
+                    if (document.getElementById('loadCollectionModal').style.display === 'flex') {
+                        renderCollectionsList();
+                    }
+
+                } catch (error) {
+                    console.error('Error importing collections:', error);
+                    setUploadStatus('Failed to import collections: ' + error.message, 'error');
+                }
+            };
+
+            reader.onerror = () => {
+                setUploadStatus('Failed to read file', 'error');
+            };
+
+            reader.readAsText(file);
+        }
+
+        // Export collections button
+        document.getElementById('export-collections-btn').addEventListener('click', () => {
+            exportCollections();
+        });
+
+        // Import collections button
+        document.getElementById('import-collections-btn').addEventListener('click', () => {
+            document.getElementById('import-collections-input').click();
+        });
+
+        // Import collections file input
+        document.getElementById('import-collections-input').addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                importCollections(file);
+            }
+            // Reset input so the same file can be selected again
+            event.target.value = '';
+        });
+
+        // Close modals when clicking outside
+        window.addEventListener('click', (event) => {
+            if (event.target === document.getElementById('saveCollectionModal')) {
+                document.getElementById('saveCollectionModal').style.display = 'none';
+            }
+            if (event.target === document.getElementById('loadCollectionModal')) {
+                document.getElementById('loadCollectionModal').style.display = 'none';
+            }
+            if (event.target === document.getElementById('deleteCollectionModal')) {
+                document.getElementById('deleteCollectionModal').style.display = 'none';
+            }
+        });
 
     </script>
 </body>
