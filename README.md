@@ -10,6 +10,13 @@ A comprehensive web-based interface for managing and emulating Amiibo on the Cha
 - **UID Randomization**: Generate fresh UIDs for existing Amiibos to avoid detection
 - **Slot Management**: Manage all 8 device slots with clear, rename, and activation controls
 
+### 📚 Collections Management
+- **Save Collections**: Save your current 8-slot configuration as a named collection
+- **Load Collections**: Restore previously saved slot configurations
+- **Collection Library**: Store unlimited collections with names and descriptions
+- **Export/Import**: Share collections between devices or backup your configurations
+- **Batch Operations**: Load entire collections with progress tracking and automatic slot clearing
+
 ### 🔍 Advanced Search & Browse
 - **Comprehensive Database**: Browse 800+ official Amiibo figures and cards
 - **Smart Filtering**: Filter by game series, character name, or Amiibo series
@@ -64,6 +71,35 @@ A comprehensive web-based interface for managing and emulating Amiibo on the Cha
 - Click "Randomize UID" on slots with existing Amiibo data
 - Generates fresh random UID while preserving Amiibo identity
 - Useful for avoiding game detection of "used" Amiibos
+
+### Working with Collections
+
+#### Saving a Collection
+1. Load your desired Amiibos into the 8 slots
+2. Click **"Save Collection"** in the Collections section
+3. Enter a collection name (required)
+4. Optionally add a description
+5. Click **"Save"** to store the collection
+
+#### Loading a Collection
+1. Click **"Load Collection"** in the Collections section
+2. Browse your saved collections list
+3. Click on a collection to select it
+4. Toggle **"Clear unused slots"** if you want empty slots cleared
+5. Click **"Load"** to write all Amiibos to your device
+6. Progress bar shows loading status for all slots
+
+#### Managing Collections
+- **Delete**: Click the "Delete" button next to any collection
+- **Export All**: Download all collections as a JSON file for backup
+- **Import**: Load collections from a previously exported JSON file
+- Collections are stored in browser localStorage and persist across sessions
+
+#### Export/Import Collections
+- **Export**: Creates a timestamped JSON file (e.g., `amiibo-collections-2025-09-30.json`)
+- **Import**: Automatically detects duplicates and skips them
+- **Share**: Send exported files to other devices or users
+- **Backup**: Regularly export to protect your collections
 
 ## 🛠 Technical Details
 
