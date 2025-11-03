@@ -2452,7 +2452,7 @@
 
             async sendCommand(cmd, data = new Uint8Array()) {
                 return gattMutex = gattMutex.then(async () => {
-                    return new Promise(async (resolve, reject) => {
+                    return new Promise((resolve, reject) => {
                         if (!this.device || !this.device.gatt.connected) {
                             onDisconnected();
                             return reject(new Error('Device not connected'));
@@ -2471,13 +2471,22 @@
                     frame.set(data, 9);
                     frame[frame.length - 1] = this.lrcCalc(Array.from(frame.slice(9, -1)));
 
+                    const timeoutId = setTimeout(() => {
+                        this.responseCallback = null;
+                        reject(new Error('Command timed out'));
+                    }, 10000);
+
                     this.responseCallback = (response) => {
+                        clearTimeout(timeoutId);
                         const responseData = new DataView(response.buffer, 9, response.byteLength - 10);
                         resolve(responseData);
                     };
 
-                    setTimeout(() => reject(new Error('Command timed out')), 5000);
-                    await this.rxCharacteristic.writeValue(frame);
+                    this.rxCharacteristic.writeValue(frame).catch((error) => {
+                        clearTimeout(timeoutId);
+                        this.responseCallback = null;
+                        reject(error);
+                    });
                     });
                 });
             }
@@ -2657,8 +2666,8 @@
 
                         await this.sendCommand(CMD_MF0_NTAG_WRITE_EMU_PAGE_DATA, writeData);
 
-                        if (page % 10 === 0) {
-                            await new Promise(resolve => setTimeout(resolve, 10));
+                        if (page % 5 === 0) {
+                            await new Promise(resolve => setTimeout(resolve, 50));
                         }
                     } catch (error) {
                         console.error(`Failed to write page ${page}:`, error);
