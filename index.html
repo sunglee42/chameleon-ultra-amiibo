@@ -2482,11 +2482,15 @@
                         resolve(responseData);
                     };
 
-                    this.rxCharacteristic.writeValue(frame).catch((error) => {
-                        clearTimeout(timeoutId);
-                        this.responseCallback = null;
-                        reject(error);
-                    });
+                    this.rxCharacteristic.writeValue(frame)
+                        .then(() => {
+                            // Write successful, now waiting for response via callback
+                        })
+                        .catch((error) => {
+                            clearTimeout(timeoutId);
+                            this.responseCallback = null;
+                            reject(error);
+                        });
                     });
                 });
             }
@@ -2607,6 +2611,9 @@
             }
 
             async _writeAmiiboData(slot, binData, signatureData = null, versionData = null) {
+                // Add small delay to ensure any previous operations have fully completed
+                await new Promise(resolve => setTimeout(resolve, 100));
+
                 // Set slot type to NTAG_215
                 const setTypeData = new Uint8Array(3);
                 const setTypeView = new DataView(setTypeData.buffer);
