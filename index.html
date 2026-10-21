@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chameleon Ultra Amiibo Emulator</title>
+    <title>Chameleon Ultra Amiibo 模擬器</title>
     <meta name="description" content="Write and emulate amiibo on a Chameleon Ultra directly from your browser over Web Bluetooth.">
     <meta name="theme-color" content="#f6f7fb" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#0c0f17" media="(prefers-color-scheme: dark)">
@@ -1299,27 +1299,27 @@
                 <div class="brand-mark">🦎</div>
                 <div class="brand-text">
                     <h1>Chameleon Ultra Amiibo</h1>
-                    <div class="subtitle">Write &amp; emulate amiibo over Web Bluetooth</div>
+                    <div class="subtitle">透過 Web Bluetooth 寫入與模擬 Amiibo</div>
                 </div>
             </div>
 
             <div class="header-actions">
-                <button id="refresh-slots-btn" class="btn-secondary btn-pill" style="display: none;">↻ Refresh</button>
-                <button id="connect-btn" class="btn-pill">Connect device</button>
+                <button id="refresh-slots-btn" class="btn-secondary btn-pill" style="display: none;">↻ 刷新</button>
+                <button id="connect-btn" class="btn-pill">連接設備</button>
                 <div id="battery-status" title="Battery">
                     <span id="battery-icon">🔋</span> <span id="battery-text">---%</span>
                 </div>
-                <button id="theme-toggle" class="icon-btn" type="button" title="Toggle theme" aria-label="Toggle color theme">◐</button>
+                <button id="theme-toggle" class="icon-btn" type="button" title="Toggle theme" aria-label="切換主題">◐</button>
             </div>
         </div>
 
         <div class="container keybar">
             <span class="muted">🔑 Retail keys</span>
-            <div id="key-status" class="pill">No keys loaded</div>
+                <div id="key-status" class="pill">未載入金鑰</div>
             <input type="file" id="key-file-input" accept=".bin" style="display: none;">
-            <button id="load-keys-btn" class="btn-secondary btn-sm btn-pill" onclick="document.getElementById('key-file-input').click();">Upload</button>
-            <button id="clear-keys-btn" class="btn-ghost btn-sm btn-pill" style="display: none;">Clear</button>
-            <span class="keybar-note">key_retail.bin is required to generate encrypted amiibo</span>
+                <button id="load-keys-btn" class="btn-secondary btn-sm btn-pill" onclick="document.getElementById('key-file-input').click();">上傳</button>
+                <button id="clear-keys-btn" class="btn-ghost btn-sm btn-pill" style="display: none;">清除</button>
+                <span class="keybar-note">需要 key_retail.bin 來產生加密的 Amiibo</span>
         </div>
     </header>
 
@@ -1334,29 +1334,29 @@
         <section id="welcome-panel" class="section">
             <div class="card welcome">
                 <div class="welcome-mark">🔌</div>
-                <h2>Connect your Chameleon Ultra</h2>
-                <p>Pair over Bluetooth to browse the eight tag slots, upload amiibo dumps, generate new tags, and emulate them straight from the browser.</p>
-                <button id="welcome-connect-btn">Connect device</button>
+                <h2>連接您的 Chameleon Ultra</h2>
+                <p>透過 Bluetooth 配對以瀏覽八個標籤插槽、上傳 Amiibo 轉儲檔、產生新標籤，並直接從瀏覽器模擬它們。</p>
+                <button id="welcome-connect-btn">連接設備</button>
                 <ul class="welcome-steps">
-                    <li><span>1</span> Power on the device</li>
-                    <li><span>2</span> Pair over Bluetooth</li>
-                    <li><span>3</span> Upload or generate an amiibo</li>
+                    <li><span>1</span> 開機設備</li>
+                    <li><span>2</span> 透過 Bluetooth 配對</li>
+                    <li><span>3</span> 上傳或產生 Amiibo</li>
                 </ul>
-                <p id="ble-unsupported">Web Bluetooth isn't available in this browser. Use Chrome, Edge, or another Chromium-based browser on desktop or Android.</p>
+                <p id="ble-unsupported">此瀏覽器不支援 Web Bluetooth。請使用 Chrome、Edge 或其他基於 Chromium 的瀏覽器在桌面或 Android 上使用。</p>
             </div>
         </section>
 
         <section id="collections-section" class="section" style="display: none;">
             <div class="section-head">
                 <div>
-                    <h2>Collections</h2>
-                    <div class="section-sub">Save and restore full 8-slot line-ups</div>
+                    <h2>收藏</h2>
+                    <div class="section-sub">儲存並恢復完整的 8 個插槽配置</div>
                 </div>
                 <div class="section-actions">
-                    <button id="save-collection-btn" class="btn-secondary btn-sm">Save</button>
-                    <button id="load-collection-btn" class="btn-secondary btn-sm">Load</button>
-                    <button id="export-collections-btn" class="btn-ghost btn-sm">Export all</button>
-                    <button id="import-collections-btn" class="btn-ghost btn-sm">Import</button>
+                    <button id="save-collection-btn" class="btn-secondary btn-sm">儲存</button>
+                    <button id="load-collection-btn" class="btn-secondary btn-sm">載入</button>
+                    <button id="export-collections-btn" class="btn-ghost btn-sm">匯出全部</button>
+                    <button id="import-collections-btn" class="btn-ghost btn-sm">匯入</button>
                     <input type="file" id="import-collections-input" accept=".json" style="display: none;">
                 </div>
             </div>
@@ -1365,8 +1365,8 @@
         <section id="amiibo-slots" class="section" style="display: none;">
             <div class="section-head">
                 <div>
-                    <h2>Amiibo tags</h2>
-                    <div class="section-sub">8 device slots — upload, generate, emulate</div>
+                <h2>Amiibo 標籤</h2>
+                <div class="section-sub">8 個裝置插槽 - 上傳、產生、模擬</div>
                 </div>
             </div>
             <div id="amiibo-slots-list"></div>
@@ -1379,43 +1379,43 @@
             <span class="close-button">&times;</span>
             <div id="amiibo-info-and-actions">
                 <div id="amiibo-details">
-                    <h3>Selected amiibo</h3>
+                    <h3>選擇的 Amiibo</h3>
                     <div id="amiibo-details-content">
                         <div id="amiibo-details-image-container">
                             <img id="amiibo-details-image" src="" alt="Amiibo Image">
                         </div>
-                        <div id="amiibo-details-info">
-                            <p><strong>Name</strong> <span id="detail-name"></span></p>
-                            <p><strong>Amiibo Series</strong> <span id="detail-amiibo-series"></span></p>
-                            <p><strong>Game Series</strong> <span id="detail-game-series"></span></p>
-                            <p><strong>Release (NA)</strong> <span id="detail-release-na"></span></p>
-                            <p><strong>Release (EU)</strong> <span id="detail-release-eu"></span></p>
-                            <p><strong>Release (JP)</strong> <span id="detail-release-jp"></span></p>
-                            <p><strong>Release (AU)</strong> <span id="detail-release-au"></span></p>
-                        </div>
+                <div id="amiibo-details-info">
+                    <p><strong>名稱</strong> <span id="detail-name"></span></p>
+                    <p><strong>Amiibo 系列</strong> <span id="detail-amiibo-series"></span></p>
+                    <p><strong>遊戲系列</strong> <span id="detail-game-series"></span></p>
+                    <p><strong>發行 (北美)</strong> <span id="detail-release-na"></span></p>
+                    <p><strong>發行 (歐洲)</strong> <span id="detail-release-eu"></span></p>
+                    <p><strong>發行 (日本)</strong> <span id="detail-release-jp"></span></p>
+                    <p><strong>發行 (澳洲)</strong> <span id="detail-release-au"></span></p>
+                </div>
                     </div>
                 </div>
 
                 <div id="actions-container">
                     <h3>Actions</h3>
-                    <p id="selected-slot-details">Select a slot to see details</p>
+                    <p id="selected-slot-details">選擇插槽以查看詳細資訊</p>
                     <select id="slot-select">
-                        <option value="0">Slot 1</option>
-                        <option value="1">Slot 2</option>
-                        <option value="2">Slot 3</option>
-                        <option value="3">Slot 4</option>
-                        <option value="4">Slot 5</option>
-                        <option value="5">Slot 6</option>
-                        <option value="6">Slot 7</option>
-                        <option value="7">Slot 8</option>
+                        <option value="0">插槽 1</option>
+                        <option value="1">插槽 2</option>
+                        <option value="2">插槽 3</option>
+                        <option value="3">插槽 4</option>
+                        <option value="4">插槽 5</option>
+                        <option value="5">插槽 6</option>
+                        <option value="6">插槽 7</option>
+                        <option value="7">插槽 8</option>
                     </select>
                     <label class="switch-row">
                         <input type="checkbox" id="random-uid-toggle">
-                        <span>Use random UID</span>
+                        <span>使用隨機 UID</span>
                     </label>
-                    <button id="write-btn">Write to slot</button>
-                    <button id="emulate-btn" class="emulate-button">Emulate</button>
-                    <button id="download-amiibo-btn" class="btn-secondary">Download .bin</button>
+                    <button id="write-btn">寫入插槽</button>
+                    <button id="emulate-btn" class="emulate-button">模擬</button>
+                    <button id="download-amiibo-btn" class="btn-secondary">下載 .bin</button>
                     <p id="status"></p>
                 </div>
             </div>
@@ -1428,21 +1428,21 @@
             <span class="close-button" id="slot-close-button">&times;</span>
             <div id="slot-info-and-actions">
                 <div id="slot-details">
-                    <h3>Slot details</h3>
+                    <h3>插槽詳細資訊</h3>
                     <div id="slot-details-content">
                         <div id="slot-details-image-container">
                             <img id="slot-details-image" src="" alt="Amiibo Image">
                         </div>
-                        <div id="slot-details-info">
-                            <p><strong>Slot</strong> <span id="slot-detail-slot"></span></p>
-                            <p><strong>Name</strong> <span id="slot-detail-name"></span></p>
-                            <p><strong>Amiibo Series</strong> <span id="slot-detail-amiibo-series"></span></p>
-                            <p><strong>Game Series</strong> <span id="slot-detail-game-series"></span></p>
-                            <p><strong>Release (NA)</strong> <span id="slot-detail-release-na"></span></p>
-                            <p><strong>Release (EU)</strong> <span id="slot-detail-release-eu"></span></p>
-                            <p><strong>Release (JP)</strong> <span id="slot-detail-release-jp"></span></p>
-                            <p><strong>Release (AU)</strong> <span id="slot-detail-release-au"></span></p>
-                        </div>
+                <div id="slot-details-info">
+                    <p><strong>插槽</strong> <span id="slot-detail-slot"></span></p>
+                    <p><strong>名稱</strong> <span id="slot-detail-name"></span></p>
+                    <p><strong>Amiibo 系列</strong> <span id="slot-detail-amiibo-series"></span></p>
+                    <p><strong>遊戲系列</strong> <span id="slot-detail-game-series"></span></p>
+                    <p><strong>發行 (北美)</strong> <span id="slot-detail-release-na"></span></p>
+                    <p><strong>發行 (歐洲)</strong> <span id="slot-detail-release-eu"></span></p>
+                    <p><strong>發行 (日本)</strong> <span id="slot-detail-release-jp"></span></p>
+                    <p><strong>發行 (澳洲)</strong> <span id="slot-detail-release-au"></span></p>
+                </div>
                     </div>
                 </div>
 
@@ -1465,12 +1465,12 @@
         <div class="modal-content" style="max-width: 420px;">
             <span class="close-button" id="clear-close-button">&times;</span>
             <div>
-                <h3>Clear slot</h3>
-                <p class="modal-note">Clear <strong id="clear-slot-name">Slot X</strong>? This permanently deletes the amiibo data from the device.</p>
+                <h3>清除插槽</h3>
+                <p class="modal-note">清除 <strong id="clear-slot-name">插槽 X</strong>？這會永久刪除此插槽中的 Amiibo 資料。</p>
             </div>
             <div class="modal-buttons">
-                <button id="clear-cancel-btn" class="btn-secondary">Cancel</button>
-                <button id="clear-confirm-btn" class="btn-danger">Clear slot</button>
+                <button id="clear-cancel-btn" class="btn-secondary">取消</button>
+                <button id="clear-confirm-btn" class="btn-danger">清除插槽</button>
             </div>
         </div>
     </div>
@@ -1480,13 +1480,13 @@
         <div class="modal-content" style="max-width: 460px;">
             <span class="close-button" id="randomize-close-button">&times;</span>
             <div>
-                <h3>Randomize UID</h3>
-                <p class="modal-note">Generate a new random UID for <strong id="randomize-slot-name">Slot X</strong>. Writing persists after reboot; emulating is temporary.</p>
+                <h3>隨機 UID</h3>
+                <p class="modal-note">為 <strong id="randomize-slot-name">插槽 X</strong> 產生新的隨機 UID。寫入後會在重新開機後保留；模擬是暫時的。</p>
             </div>
             <div class="modal-buttons">
-                <button id="randomize-cancel-btn" class="btn-secondary">Cancel</button>
-                <button id="randomize-write-btn">Write</button>
-                <button id="randomize-emulate-btn" class="emulate-button">Emulate</button>
+                <button id="randomize-cancel-btn" class="btn-secondary">取消</button>
+                <button id="randomize-write-btn">寫入</button>
+                <button id="randomize-emulate-btn" class="emulate-button">模擬</button>
             </div>
         </div>
     </div>
@@ -1495,24 +1495,24 @@
     <div id="uploadModal" class="modal">
         <div class="modal-content" style="max-width: 460px;">
             <span class="close-button" id="upload-close-button">&times;</span>
-            <h3>Upload amiibo to <span id="upload-slot-name">Slot X</span></h3>
+            <h3>上傳 Amiibo 到 <span id="upload-slot-name">插槽 X</span></h3>
 
             <div class="form-group" style="margin: 0;">
-                <label for="upload-file-input">Amiibo dump (.bin or .nfc)</label>
+                <label for="upload-file-input">Amiibo 轉儲檔 (.bin 或 .nfc)</label>
                 <input type="file" id="upload-file-input" accept=".bin,.nfc">
             </div>
 
             <div id="upload-randomize-section" style="display: none;">
                 <label class="switch-row">
                     <input type="checkbox" id="upload-randomize-uid">
-                    <span>Randomize UID</span>
+                    <span>隨機 UID</span>
                 </label>
             </div>
 
             <div class="modal-buttons">
-                <button id="upload-cancel-btn" class="btn-secondary">Cancel</button>
-                <button id="upload-confirm-btn">Write</button>
-                <button id="upload-emulate-btn" class="emulate-button">Emulate</button>
+                <button id="upload-cancel-btn" class="btn-secondary">取消</button>
+                <button id="upload-confirm-btn">寫入</button>
+                <button id="upload-emulate-btn" class="emulate-button">模擬</button>
             </div>
 
             <div id="upload-modal-status" class="inline-status"></div>
@@ -1523,23 +1523,23 @@
     <div id="saveCollectionModal" class="modal">
         <div class="modal-content" style="max-width: 520px;">
             <span class="close-button" id="save-collection-close-button">&times;</span>
-            <h3>Save collection</h3>
+            <h3>儲存收藏</h3>
 
             <div>
                 <div class="form-group">
-                    <label for="collection-name-input">Collection name</label>
-                    <input type="text" id="collection-name-input" placeholder="e.g. Smash mains" maxlength="50">
+                    <label for="collection-name-input">收藏名稱</label>
+                    <input type="text" id="collection-name-input" placeholder="例如： Smash 主力" maxlength="50">
                 </div>
 
                 <div class="form-group" style="margin: 0;">
-                    <label for="collection-description-input">Description (optional)</label>
-                    <textarea id="collection-description-input" placeholder="What's in this collection?" maxlength="200"></textarea>
+                    <label for="collection-description-input">描述（可選）</label>
+                    <textarea id="collection-description-input" placeholder="這個收藏裡有什麼？" maxlength="200"></textarea>
                 </div>
             </div>
 
             <div class="modal-buttons">
-                <button id="save-collection-cancel-btn" class="btn-secondary">Cancel</button>
-                <button id="save-collection-confirm-btn">Save</button>
+                <button id="save-collection-cancel-btn" class="btn-secondary">取消</button>
+                <button id="save-collection-confirm-btn">儲存</button>
             </div>
         </div>
     </div>
@@ -1548,7 +1548,7 @@
     <div id="loadCollectionModal" class="modal">
         <div class="modal-content" style="max-width: 600px;">
             <span class="close-button" id="load-collection-close-button">&times;</span>
-            <h3>Load collection</h3>
+            <h3>載入收藏</h3>
 
             <div>
                 <div class="collections-list" id="collections-list">
@@ -1557,14 +1557,14 @@
 
                 <label class="checkbox-group">
                     <input type="checkbox" id="clear-unused-slots-checkbox" checked>
-                    <span>Clear unused slots (if the collection has fewer than 8 amiibo)</span>
+                    <span>清除未使用的插槽（如果收藏中的 Amiibo 少於 8 個）</span>
                 </label>
             </div>
 
             <div class="modal-buttons">
-                <button id="load-collection-cancel-btn" class="btn-secondary">Cancel</button>
-                <button id="load-collection-write-btn" disabled>Write</button>
-                <button id="load-collection-emulate-btn" class="emulate-button" disabled>Emulate</button>
+                <button id="load-collection-cancel-btn" class="btn-secondary">取消</button>
+                <button id="load-collection-write-btn" disabled>寫入</button>
+                <button id="load-collection-emulate-btn" class="emulate-button" disabled>模擬</button>
             </div>
         </div>
     </div>
@@ -1574,12 +1574,12 @@
         <div class="modal-content" style="max-width: 420px;">
             <span class="close-button" id="delete-collection-close-button">&times;</span>
             <div>
-                <h3>Delete collection</h3>
-                <p class="modal-note">Delete <strong id="delete-collection-name">this collection</strong>? This cannot be undone.</p>
+                <h3>刪除收藏</h3>
+                <p class="modal-note">刪除 <strong id="delete-collection-name">這個收藏</strong>？此操作無法復原。</p>
             </div>
             <div class="modal-buttons">
-                <button id="delete-collection-cancel-btn" class="btn-secondary">Cancel</button>
-                <button id="delete-collection-confirm-btn" class="btn-danger">Delete</button>
+                <button id="delete-collection-cancel-btn" class="btn-secondary">取消</button>
+                <button id="delete-collection-confirm-btn" class="btn-danger">刪除</button>
             </div>
         </div>
     </div>
@@ -1588,49 +1588,49 @@
     <div id="generateModal" class="modal">
         <div class="modal-content">
             <span class="close-button" id="generate-close-button">&times;</span>
-            <h3>Generate amiibo for <span id="generate-slot-name">Slot X</span></h3>
+            <h3>為 <span id="generate-slot-name">插槽 X</span> 產生 Amiibo</h3>
 
             <!-- Tab Navigation -->
             <div class="generate-tabs">
-                <button class="tab-btn active" data-tab="recent">⏱️ Recent</button>
-                <button class="tab-btn" data-tab="favorites">⭐ Favorites</button>
-                <button class="tab-btn" data-tab="search">🔍 Search</button>
+                <button class="tab-btn active" data-tab="recent">⏱️ 最近</button>
+                <button class="tab-btn" data-tab="favorites">⭐ 收藏</button>
+                <button class="tab-btn" data-tab="search">🔍 搜尋</button>
             </div>
 
             <!-- Recent Tab Content -->
             <div id="recent-tab" class="tab-content active">
                 <div id="recent-amiibos-container" class="card-strip">
-                    <div class="empty-state">No recent amiibos</div>
+                    <div class="empty-state">沒有最近的 Amiibo</div>
                 </div>
             </div>
 
             <!-- Favorites Tab Content -->
             <div id="favorites-tab" class="tab-content">
                 <div id="favorites-amiibos-container" class="card-strip">
-                    <div class="empty-state">No favorite amiibos</div>
+                    <div class="empty-state">沒有收藏的 Amiibo</div>
                 </div>
             </div>
 
             <!-- Search Tab Content -->
             <div id="search-tab" class="tab-content">
                 <div>
-                    <input type="text" id="amiibo-search" placeholder="Search amiibo by name…">
+                    <input type="text" id="amiibo-search" placeholder="搜尋 Amiibo 名稱…">
 
                     <div class="search-filters">
                         <div class="filter">
-                            <label for="game-series-filter">Game series</label>
+                            <label for="game-series-filter">遊戲系列</label>
                             <select id="game-series-filter">
-                                <option value="">All game series</option>
+                                <option value="">所有遊戲系列</option>
                             </select>
                         </div>
                         <div class="filter" style="flex: 0 1 150px;">
-                            <label for="sort-option">Sort by</label>
+                            <label for="sort-option">排序方式</label>
                             <select id="sort-option">
-                                <option value="newest">Newest first</option>
-                                <option value="oldest">Oldest first</option>
+                                <option value="newest">最新優先</option>
+                                <option value="oldest">最舊優先</option>
                             </select>
                         </div>
-                        <button id="clear-filters-btn" class="btn-secondary btn-sm">Clear</button>
+                        <button id="clear-filters-btn" class="btn-secondary btn-sm">清除</button>
                     </div>
 
                     <div id="results-info"></div>
@@ -1641,7 +1641,7 @@
 
                 <!-- Selected Amiibo Section -->
                 <div id="selected-amiibo-section" style="display: none; margin-top: 18px;">
-                    <h4>Selected amiibo</h4>
+                    <h4>選擇的 Amiibo</h4>
                     <div class="selected-amiibo-row">
                         <img id="selected-amiibo-image" src="" alt="">
                         <div class="meta">
@@ -1651,14 +1651,14 @@
                         </div>
                         <label class="fav-toggle" for="favorite-checkbox">
                             <input type="checkbox" id="favorite-checkbox">
-                            <span>⭐ Favorite</span>
+                            <span>⭐ 收藏</span>
                         </label>
                     </div>
 
                     <div class="modal-buttons">
-                        <button id="generate-cancel-btn" class="btn-secondary">Cancel</button>
-                        <button id="generate-write-btn">Write</button>
-                        <button id="generate-emulate-btn" class="emulate-button">Emulate</button>
+                        <button id="generate-cancel-btn" class="btn-secondary">取消</button>
+                        <button id="generate-write-btn">寫入</button>
+                        <button id="generate-emulate-btn" class="emulate-button">模擬</button>
                     </div>
                 </div>
             </div>
@@ -1670,12 +1670,12 @@
         <div class="modal-content" style="max-width: 420px;">
             <span class="close-button" id="download-close-button">&times;</span>
             <div>
-                <h3>Download amiibo</h3>
-                <p class="modal-note">Export <strong id="download-slot-name">Slot X</strong> as a .bin file. This feature isn't implemented yet.</p>
+                <h3>下載 Amiibo</h3>
+                <p class="modal-note">匯出 <strong id="download-slot-name">插槽 X</strong> 為 .bin 檔案。此功能尚未實作。</p>
             </div>
             <div class="modal-buttons">
-                <button id="download-cancel-btn" class="btn-secondary">Cancel</button>
-                <button id="download-confirm-btn" disabled>Download (coming soon)</button>
+                <button id="download-cancel-btn" class="btn-secondary">取消</button>
+                <button id="download-confirm-btn" disabled>下載（即將推出）</button>
             </div>
         </div>
     </div>
@@ -1683,8 +1683,8 @@
     <!-- Upload Progress Modal -->
     <div id="uploadProgressModal" class="modal">
         <div class="modal-content" style="max-width: 460px;">
-            <h3 id="upload-progress-title">Processing…</h3>
-            <div id="upload-progress-message" class="muted">Preparing upload…</div>
+            <h3 id="upload-progress-title">處理中…</h3>
+            <div id="upload-progress-message" class="muted">準備上傳…</div>
             <div>
                 <div class="progress-track">
                     <div id="upload-progress-bar" class="progress-fill"></div>
@@ -2028,25 +2028,25 @@
                     const keyData = JSON.parse(storedKeys);
                     maboiiKeys = keyData;
                     keysLoaded = true;
-                    console.log('Maboii keys loaded from localStorage');
+                    console.log('Maboii 金鑰已從 localStorage 載入');
                     return true;
                 }
             } catch (error) {
-                console.error('Error loading stored keys:', error);
+                console.error('載入儲存的金鑰時發生錯誤：', error);
                 localStorage.removeItem('maboiiKeys');
             }
             return false;
         }
 
         // Update key status UI and refresh slot cards to show/hide generation links
-        async function updateKeyStatus() {
+        async         function updateKeyStatus() {
             if (keysLoaded && maboiiKeys) {
                 keyStatus.className = 'pill pill-success';
-                keyStatus.textContent = 'Keys loaded';
+                keyStatus.textContent = '金鑰已載入';
                 clearKeysBtn.style.display = 'inline-flex';
             } else {
                 keyStatus.className = 'pill';
-                keyStatus.textContent = 'No keys loaded';
+                keyStatus.textContent = '未載入金鑰';
                 clearKeysBtn.style.display = 'none';
             }
 
@@ -2064,12 +2064,12 @@
             const file = keyFileInput.files[0];
 
             if (!file) {
-                setUploadStatus('Please select a key file first', 'warning');
+                setUploadStatus('請先選擇金鑰檔案', 'warning');
                 return;
             }
 
             if (file.name !== 'key_retail.bin' && !file.name.includes('key')) {
-                if (!confirm('File name doesn\'t match expected key file format. Continue anyway?')) {
+                if (!confirm('檔案名稱不符合預期的金鑰檔案格式。仍要繼續嗎？')) {
                     return;
                 }
             }
@@ -2084,7 +2084,7 @@
                     maboiiKeys = maboii.loadMasterKeys(keyArray);
 
                     if (!maboiiKeys) {
-                        throw new Error('Invalid key file format');
+                        throw new Error('無效的金鑰檔案格式');
                     }
 
                     keysLoaded = true;
@@ -2092,16 +2092,16 @@
                     localStorage.setItem('maboiiKeys', JSON.stringify(maboiiKeys));
                     await updateKeyStatus();
 
-                    setUploadStatus('Keys loaded successfully! You can now generate encrypted amiibo files.', 'success');
+                    setUploadStatus('金鑰載入成功！您現在可以產生加密的 Amiibo 檔案。', 'success');
 
                 } catch (error) {
-                    console.error('Error loading keys:', error);
-                    setUploadStatus('Error loading keys: ' + error.message, 'error');
+                    console.error('載入金鑰時發生錯誤：', error);
+                    setUploadStatus('載入金鑰時發生錯誤：' + error.message, 'error');
                 }
             };
 
             reader.onerror = function() {
-                setUploadStatus('Error reading file', 'error');
+                setUploadStatus('讀取檔案時發生錯誤', 'error');
             };
 
             reader.readAsArrayBuffer(file);
@@ -2114,7 +2114,7 @@
             localStorage.removeItem('maboiiKeys');
             await updateKeyStatus();
             keyFileInput.value = '';
-            setUploadStatus('Keys cleared successfully.', 'success');
+            setUploadStatus('金鑰清除成功。', 'success');
         }
         let fixedUids = {}; // Store fixed UIDs for each Amiibo ID
         let importedBinFile = null; // Store the currently selected .bin/.nfc file data
@@ -2141,7 +2141,7 @@
                 batteryStatus.className = 'battery-good';
             }
 
-            batteryStatus.title = `Battery: ${percentage}% (${voltage}mV)`;
+            batteryStatus.title = `電池: ${percentage}% (${voltage}mV)`;
             batteryStatus.style.display = 'inline-flex';
         }
 
@@ -2173,8 +2173,8 @@
         }
 
         function onDisconnected() {
-            console.log('Device disconnected');
-            connectBtn.textContent = 'Connect device';
+            console.log('裝置已斷開連線');
+            connectBtn.textContent = '連接設備';
             connectBtn.disabled = false;
             refreshSlotsBtn.style.display = 'none';
             welcomePanel.style.display = 'block';
@@ -2186,7 +2186,7 @@
                 ultra.device.removeEventListener('gattserverdisconnected', onDisconnected);
             }
             ultra = null;
-            setUploadStatus('Device disconnected', 'error');
+            setUploadStatus('裝置已斷開連線', 'error');
         }
 
         function setUploadStatus(message, type = 'info') {
@@ -2210,7 +2210,7 @@
         function parseBinFile(data) {
             // NTAG215 can be 540 bytes (standard) or 572+ bytes (with signature)
             if (data.byteLength !== 540 && data.byteLength < 572) {
-                throw new Error(`Invalid .bin file size: ${data.byteLength} bytes (expected 540 bytes for NTAG215 or 572+ bytes with signature)`);
+                throw new Error(`無效的 .bin 檔案大小：${data.byteLength} 位元組（預期 NTAG215 為 540 位元組或包含簽章的 572+ 位元組）`);
             }
 
             const uint8Data = new Uint8Array(data);
@@ -2251,7 +2251,7 @@
                 // Validate signature (check if it's not all zeros)
                 const isEmptySignature = signatureData.every(byte => byte === 0);
                 if (isEmptySignature) {
-                    console.warn('Warning: ECC signature appears to be empty (all zeros)');
+                    console.warn('警告：ECC 簽章似乎為空（全部為零）');
                 }
             }
 
@@ -2306,12 +2306,12 @@
 
             // Validate device type
             if (deviceType !== 'NTAG215') {
-                throw new Error(`Unsupported device type: ${deviceType}. Only NTAG215 is supported.`);
+                throw new Error(`不支援的裝置類型：${deviceType}。僅支援 NTAG215。`);
             }
 
             // Validate we have enough pages (NTAG215 should have 135 pages, 0-134)
             if (pages.length < 135) {
-                throw new Error(`Invalid .nfc file: Missing pages. Expected 135 pages, got ${pages.length}`);
+                throw new Error(`無效的 .nfc 檔案：缺少頁面。預期 135 頁，取得 ${pages.length} 頁`);
             }
 
             // Convert pages to 540-byte data array
@@ -2355,7 +2355,7 @@
                 const hasValidPwd = lastBytes[4] === 0x80 && lastBytes[5] === 0x80;
 
                 if (hasValidPwd) {
-                    console.log('File appears to already be patched, using as-is');
+                    console.log('檔案似乎已經被修補，使用原始檔案');
                     return binData.fullData;
                 }
             }
@@ -2405,15 +2405,15 @@
             // Only set AUTH0 if it's not already set, preserve other config bytes
             if (patchedData[527] === 0x00 || patchedData[527] === 0xFF) {
                 patchedData[527] = 0x04; // AUTH0: Pages 4+ require authentication
-                console.log('Set AUTH0 to 0x04 for Amiibo compatibility');
+                console.log('設定 AUTH0 為 0x04 以確保 Amiibo 相容性');
             } else {
-                console.log('AUTH0 already set to 0x' + patchedData[527].toString(16).padStart(2, '0'));
+                console.log('AUTH0 已設定為 0x' + patchedData[527].toString(16).padStart(2, '0'));
             }
 
             // Preserve original configuration bytes - don't override them
-            console.log('Config pages preserved from original file');
+            console.log('原始檔案的設定頁面已保留');
 
-            console.log('Patched Amiibo data:', {
+            console.log('修補的 Amiibo 資料：', {
                 originalSize: binData.fullData.byteLength,
                 patchedSize: patchedData.byteLength,
                 password: Array.from(pwd).map(b => '0x' + b.toString(16).padStart(2, '0')).join(', '),
@@ -2452,7 +2452,7 @@
             selectedSlotAmiiboDetails = amiiboDetails;
 
             // Populate slot details
-            slotDetailSlot.textContent = `Slot ${slotIndex + 1}`;
+            slotDetailSlot.textContent = `插槽 ${slotIndex + 1}`;
             slotDetailName.textContent = amiiboDetails.name;
             slotDetailAmiiboSeries.textContent = amiiboDetails.amiiboSeries;
             slotDetailGameSeries.textContent = amiiboDetails.gameSeries;
@@ -2482,7 +2482,7 @@
 
         // Modal functions for Clear Slot
         function openClearSlotModal(slotIndex, slotName) {
-            clearSlotName.textContent = `${slotName} (Slot ${slotIndex + 1})`;
+            clearSlotName.textContent = `${slotName} (插槽 ${slotIndex + 1})`;
             clearSlotModal.style.display = 'flex';
 
             // Store slot index for the confirm action
@@ -2501,7 +2501,7 @@
         function openRandomizeModal(slotIndex, slotName) {
             randomizeTargetSlot = slotIndex;
             randomizeTargetName = slotName;
-            randomizeSlotName.textContent = `${slotName} (Slot ${slotIndex + 1})`;
+            randomizeSlotName.textContent = `${slotName} (插槽 ${slotIndex + 1})`;
             randomizeModal.style.display = 'flex';
         }
 
@@ -2859,7 +2859,7 @@
                     recentAmiibos = recentAmiibos.filter(a => a && a.id && a.name).slice(0, MAX_RECENT_AMIIBOS);
                 }
             } catch (error) {
-                console.error('Failed to load recent amiibos:', error);
+                console.error('無法載入最近的 Amiibo：', error);
                 recentAmiibos = [];
             }
         }
@@ -2888,7 +2888,7 @@
             try {
                 localStorage.setItem('recentAmiibos', JSON.stringify(recentAmiibos));
             } catch (error) {
-                console.error('Failed to save recent amiibos:', error);
+                console.error('無法儲存最近的 Amiibo：', error);
             }
         }
 
@@ -2900,7 +2900,7 @@
             container.innerHTML = '';
 
             if (recentAmiibos.length === 0) {
-                container.innerHTML = '<div class="empty-state">No recent amiibos<small>Amiibo you generate show up here</small></div>';
+                container.innerHTML = '<div class="empty-state">沒有最近的 Amiibo<small>您產生的 Amiibo 會顯示在這裡</small></div>';
                 return;
             }
 
@@ -2935,7 +2935,7 @@
 
         function openGenerateModal(slotIndex, slotName) {
             generateTargetSlot = slotIndex;
-            document.getElementById('generate-slot-name').textContent = `${slotName} (Slot ${slotIndex + 1})`;
+            document.getElementById('generate-slot-name').textContent = `${slotName} (插槽 ${slotIndex + 1})`;
             document.getElementById('generateModal').style.display = 'flex';
 
             // Reset the modal state
@@ -3030,7 +3030,7 @@
                     favoriteAmiibos = favoriteAmiibos.filter(a => a && a.id && a.name).slice(0, MAX_FAVORITE_AMIIBOS);
                 }
             } catch (error) {
-                console.error('Failed to load favorite amiibos:', error);
+                console.error('無法載入收藏的 Amiibo：', error);
                 favoriteAmiibos = [];
             }
         }
@@ -3057,7 +3057,7 @@
                 try {
                     localStorage.setItem('favoriteAmiibos', JSON.stringify(favoriteAmiibos));
                 } catch (error) {
-                    console.error('Failed to save favorite amiibos:', error);
+                    console.error('無法儲存收藏的 Amiibo：', error);
                 }
 
                 return true; // Successfully added
@@ -3072,7 +3072,7 @@
             try {
                 localStorage.setItem('favoriteAmiibos', JSON.stringify(favoriteAmiibos));
             } catch (error) {
-                console.error('Failed to save favorite amiibos:', error);
+                console.error('無法儲存收藏的 Amiibo：', error);
             }
         }
 
@@ -3099,7 +3099,7 @@
             container.innerHTML = '';
 
             if (favoriteAmiibos.length === 0) {
-                container.innerHTML = '<div class="empty-state">No favorite amiibos<small>Star an amiibo to add it here</small></div>';
+                container.innerHTML = '<div class="empty-state">沒有收藏的 Amiibo<small>將 Amiibo 加入收藏</small></div>';
                 return;
             }
 
@@ -3129,7 +3129,7 @@
                 // Add context menu for removing favorites
                 card.addEventListener('contextmenu', (e) => {
                     e.preventDefault();
-                    if (confirm(`Remove ${amiibo.name} from favorites?`)) {
+                    if (confirm(`${amiibo.name} 從收藏中移除？`)) {
                         removeFavoriteAmiibo(amiibo.id);
                         displayFavoriteAmiibos(); // Refresh display
                     }
@@ -3593,11 +3593,11 @@
         // Always generates with a random UID for fresh amiibo files
         async function generateEncryptedAmiiboData(amiiboId) {
             if (!keysLoaded || !maboiiKeys) {
-                throw new Error('Retail keys not loaded. Please upload key_retail.bin first.');
+                throw new Error('未載入零售金鑰。請先上傳 key_retail.bin。');
             }
 
             try {
-                console.log(`Generating encrypted amiibo: ${amiiboId}`);
+                console.log(`產生加密的 Amiibo: ${amiiboId}`);
 
                 // Create base unpacked data (540 bytes of zeros)
                 const unpackedData = new Array(540).fill(0);
@@ -3664,7 +3664,7 @@
                 packedData[536] = 0x80;
                 packedData[537] = 0x80;
 
-                console.log('✅ Encrypted amiibo generated successfully');
+                console.log('✅ 已成功產生加密的 Amiibo');
 
                 // Extract UID for return (first 8 bytes)
                 const uid = Array.from(packedData.slice(0, 8));
@@ -3675,7 +3675,7 @@
                 };
 
             } catch (error) {
-                console.error('Error generating encrypted amiibo:', error);
+                console.error('產生加密 Amiibo 時發生錯誤：', error);
                 throw error;
             }
         }
