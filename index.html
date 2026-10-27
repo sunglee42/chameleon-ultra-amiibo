@@ -1292,6 +1292,66 @@
     </script>
 </head>
 <body>
+    <section class="container" aria-labelledby="activity-log-title" style="margin-block: 16px;">
+        <details open>
+            <summary id="activity-log-title">執行訊息（保留最近 1,000 筆）</summary>
+            <button id="clear-activity-log" type="button" class="btn-secondary" style="margin-block: 8px;">清除訊息</button>
+            <div id="activity-log" role="log" aria-live="polite" aria-relevant="additions" tabindex="0"
+                style="max-height: 260px; overflow: auto; padding: 12px; border: 1px solid currentColor; border-radius: 8px; font-family: monospace; font-size: 13px; text-align: left;"></div>
+        </details>
+    </section>
+    <script>
+        // Capture application and library messages before either script starts.
+        (() => {
+            const log = document.getElementById('activity-log');
+            const labels = { log: '訊息', info: '資訊', debug: '除錯', warn: '警告', error: '錯誤', trace: '追蹤' };
+            function format(value) {
+                if (typeof value === 'string') return value;
+                if (value instanceof Error) return value.stack || `${value.name}: ${value.message}`;
+                try {
+                    const seen = new WeakSet();
+                    return JSON.stringify(value, (key, item) => {
+                        if (typeof item === 'bigint') return `${item}n`;
+                        if (item instanceof Error) return item.stack || item.message;
+                        if (item && typeof item === 'object') {
+                            if (seen.has(item)) return '[循環參照]';
+                            seen.add(item);
+                        }
+                        return item;
+                    }, 2) ?? String(value);
+                } catch {
+                    return '[無法顯示的資料]';
+                }
+            }
+            function append(level, args) {
+                const atBottom = log.scrollHeight - log.scrollTop - log.clientHeight < 24;
+                const entry = document.createElement('div');
+                entry.style.whiteSpace = 'pre-wrap';
+                entry.style.overflowWrap = 'anywhere';
+                entry.style.paddingBlock = '4px';
+                entry.textContent = `[${new Date().toLocaleTimeString('zh-TW', { hour12: false })}] [${labels[level]}] ${args.map(format).join(' ')}`;
+                log.appendChild(entry);
+                // Keep memory bounded during long Bluetooth sessions.
+                if (log.childElementCount > 1000) log.firstElementChild.remove();
+                if (atBottom) log.scrollTop = log.scrollHeight;
+            }
+            Object.keys(labels).forEach(level => {
+                console[level] = (...args) => append(level, args);
+            });
+            console.assert = (condition, ...args) => {
+                if (!condition) append('error', args.length ? args : ['斷言失敗']);
+            };
+            console.table = data => append('info', [data]);
+            window.addEventListener('error', event => {
+                if (event.error || event.message) append('error', [event.error || event.message]);
+                else if (event.target && (event.target.src || event.target.href)) {
+                    append('error', ['資源載入失敗：', event.target.src || event.target.href]);
+                }
+            }, true);
+            window.addEventListener('unhandledrejection', event => append('error', ['未處理的非同步錯誤：', event.reason]));
+            document.getElementById('clear-activity-log').addEventListener('click', () => log.replaceChildren());
+        })();
+    </script>
     <!-- Header -->
     <header class="app-header">
         <div class="container app-header-inner">
