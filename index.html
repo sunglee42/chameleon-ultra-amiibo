@@ -1277,6 +1277,34 @@
             .modal-buttons, .modal-actions { justify-content: stretch; }
             .modal-buttons button, .modal-actions button { flex: 1 1 120px; }
         }
+        /* Progress and live messages share one overlay without covering each other. */
+        #uploadProgressModal { z-index: 300; }
+        #uploadProgressModal .progress-overlay-stack {
+            width: 100%;
+            max-width: 740px;
+            max-height: 100%;
+            overflow-y: auto;
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        #uploadProgressModal .modal-content {
+            flex-shrink: 0;
+            max-height: none;
+        }
+        #uploadProgressModal #activity-log-panel {
+            width: 100%;
+            margin: 0 !important;
+            padding: 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+        }
+        #uploadProgressModal #activity-log {
+            max-height: min(260px, 35dvh) !important;
+        }
     </style>
 
     <script>
@@ -1292,7 +1320,8 @@
     </script>
 </head>
 <body>
-    <section class="container" aria-labelledby="activity-log-title" style="margin-block: 16px;">
+    <div id="activity-log-home"></div>
+    <section id="activity-log-panel" class="container" aria-labelledby="activity-log-title" style="margin-block: 16px;">
         <details open>
             <summary id="activity-log-title">執行訊息（保留最近 1,000 筆）</summary>
             <button id="clear-activity-log" type="button" class="btn-secondary" style="margin-block: 8px;">清除訊息</button>
@@ -1742,16 +1771,18 @@
 
     <!-- Upload Progress Modal -->
     <div id="uploadProgressModal" class="modal">
-        <div class="modal-content" style="max-width: 460px;">
-            <h3 id="upload-progress-title">處理中…</h3>
-            <div id="upload-progress-message" class="muted">準備上傳…</div>
-            <div>
-                <div class="progress-track">
-                    <div id="upload-progress-bar" class="progress-fill"></div>
-                </div>
-                <div style="display: flex; justify-content: space-between; margin-top: 8px;">
-                    <span id="upload-details" class="tiny muted"></span>
-                    <span id="upload-progress-percent" class="progress-percent tiny">0%</span>
+        <div class="progress-overlay-stack" id="progress-overlay-stack">
+            <div class="modal-content" style="max-width: 460px;">
+                <h3 id="upload-progress-title">處理中…</h3>
+                <div id="upload-progress-message" class="muted">準備上傳…</div>
+                <div>
+                    <div class="progress-track">
+                        <div id="upload-progress-bar" class="progress-fill"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 8px;">
+                        <span id="upload-details" class="tiny muted"></span>
+                        <span id="upload-progress-percent" class="progress-percent tiny">0%</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -3226,6 +3257,8 @@
 
 
 
+        // Move the existing log so messages and controls stay live in both locations.
+        let activityLogWasOpen = true;
         // Upload Progress Modal functions
         function showUploadProgress(message, percent = 0, details = '', title = '處理中…') {
             uploadProgressTitle.textContent = title;
@@ -3233,7 +3266,16 @@
             uploadProgressBar.style.width = percent + '%';
             uploadProgressPercent.textContent = Math.round(percent) + '%';
             uploadDetails.textContent = details;
+            const panel = document.getElementById('activity-log-panel');
+            const disclosure = panel.querySelector('details');
+            if (panel.parentElement.id !== 'progress-overlay-stack') {
+                activityLogWasOpen = disclosure.open;
+                document.getElementById('progress-overlay-stack').appendChild(panel);
+                disclosure.open = true;
+            }
             uploadProgressModal.style.display = 'flex';
+            const log = document.getElementById('activity-log');
+            log.scrollTop = log.scrollHeight;
         }
 
         function updateUploadProgress(message, percent, details = '') {
@@ -3247,6 +3289,11 @@
 
         function hideUploadProgress() {
             uploadProgressModal.style.display = 'none';
+            const panel = document.getElementById('activity-log-panel');
+            if (panel.parentElement.id === 'progress-overlay-stack') {
+                document.getElementById('activity-log-home').after(panel);
+                panel.querySelector('details').open = activityLogWasOpen;
+            }
         }
 
         class ChameleonUltra {
