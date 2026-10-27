@@ -1790,8 +1790,6 @@
 
     <script src="https://cdn.jsdelivr.net/gh/christopher-roelofs/maboii.js@main/maboii.js"></script>
     <script>
-        // GATT operation mutex to prevent concurrent operations
-        let gattMutex = Promise.resolve();
 
         // Theme toggle (light / dark, persisted; defaults to the OS preference)
         (function initTheme() {
@@ -3302,6 +3300,7 @@
                 this.rxCharacteristic = null;
                 this.responseCallback = null;
                 this.responseBuffer = new Uint8Array();
+                this.commandQueue = Promise.resolve();
             }
 
             async connect() {
@@ -3334,7 +3333,6 @@
                     const frame = this.responseBuffer.slice(sofIndex, sofIndex + frameLen);
                     if (this.responseCallback) {
                         this.responseCallback(new DataView(frame.buffer));
-                        this.responseCallback = null;
                     }
                     this.responseBuffer = this.responseBuffer.slice(sofIndex + frameLen);
                 }
@@ -3347,12 +3345,12 @@
             }
 
             async sendCommand(cmd, data = new Uint8Array()) {
-                return gattMutex = gattMutex.then(async () => {
-                    return new Promise((resolve, reject) => {
-                        if (!this.device || !this.device.gatt.connected) {
-                            onDisconnected();
-                            return reject(new Error('裝置尚未連線'));
-                        }
+                const device = this.device;
+                const characteristic = this.rxCharacteristic;
+                const operation = this.commandQueue.then(async () => {
+                    if (!device || !device.gatt.connected || device !== this.device || !characteristic) {
+                        throw new Error('裝置尚未連線');
+                    }
 
                     const header = new Uint8Array(6);
                     const view = new DataView(header.buffer);
@@ -3367,28 +3365,41 @@
                     frame.set(data, 9);
                     frame[frame.length - 1] = this.lrcCalc(Array.from(frame.slice(9, -1)));
 
-                    const timeoutId = setTimeout(() => {
-                        this.responseCallback = null;
-                        reject(new Error('指令執行逾時'));
-                    }, 10000);
-
-                    this.responseCallback = (response) => {
-                        clearTimeout(timeoutId);
-                        const responseData = new DataView(response.buffer, 9, response.byteLength - 10);
-                        resolve(responseData);
-                    };
-
-                    this.rxCharacteristic.writeValue(frame)
-                        .then(() => {
-                            // Write successful, now waiting for response via callback
-                        })
-                        .catch((error) => {
-                            clearTimeout(timeoutId);
-                            this.responseCallback = null;
-                            reject(error);
-                        });
+                    let timeoutId;
+                    let callback;
+                    let rejectResponse;
+                    const responsePromise = new Promise((resolve, reject) => {
+                        rejectResponse = reject;
+                        callback = response => {
+                            // Ignore unrelated notifications rather than completing the wrong command.
+                            if (response.getUint16(2, false) !== cmd) return;
+                            resolve(new DataView(response.buffer, response.byteOffset + 9, response.byteLength - 10));
+                        };
+                        this.responseCallback = callback;
+                        timeoutId = setTimeout(() => {
+                            reject(new Error('指令執行逾時，請重新連線'));
+                            // A late reply must not be mistaken for the next command's reply.
+                            device.gatt.disconnect();
+                        }, 10000);
                     });
+                    const writePromise = Promise.resolve().then(() => characteristic.writeValue(frame));
+                    // A rejected write cannot produce a response; release that wait as well.
+                    writePromise.catch(error => rejectResponse(error));
+                    try {
+                        // Notifications may arrive before writeValue settles. Wait for BOTH
+                        // even on failure, so the next command never overlaps a pending write.
+                        const [write, response] = await Promise.allSettled([writePromise, responsePromise]);
+                        if (write.status === 'rejected') throw write.reason;
+                        if (response.status === 'rejected') throw response.reason;
+                        return response.value;
+                    } finally {
+                        clearTimeout(timeoutId);
+                        if (this.responseCallback === callback) this.responseCallback = null;
+                    }
                 });
+                // Recover the queue tail, while preserving the error for this caller.
+                this.commandQueue = operation.catch(() => {});
+                return operation;
             }
 
             async getSlotNames() {
