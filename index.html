@@ -1413,9 +1413,8 @@
     <div id="activity-log-home"></div>
     <section id="activity-log-panel" class="container" aria-labelledby="activity-log-title" style="margin-block: 16px;">
         <h3 class="activity-log-modal-title">執行訊息（保留最近 1,000 筆）</h3>
-        <details open>
+        <details>
             <summary id="activity-log-title">執行訊息（保留最近 1,000 筆）</summary>
-            <button id="clear-activity-log" type="button" class="btn-secondary" style="margin-block: 8px;">清除訊息</button>
             <div id="activity-log" role="log" aria-live="polite" aria-relevant="additions" tabindex="0"
                 style="max-height: 260px; overflow: auto; padding: 12px; border: 1px solid currentColor; border-radius: 8px; font-family: monospace; font-size: 13px; text-align: left;"></div>
         </details>
@@ -1469,7 +1468,6 @@
                 }
             }, true);
             window.addEventListener('unhandledrejection', event => append('error', ['未處理的非同步錯誤：', event.reason]));
-            document.getElementById('clear-activity-log').addEventListener('click', () => log.replaceChildren());
         })();
     </script>
 
@@ -3267,7 +3265,7 @@
 
 
         // Move the existing log so messages and controls stay live in both locations.
-        let activityLogWasOpen = true;
+        let activityLogWasOpen = false;
         // Upload Progress Modal functions
         function showUploadProgress(message, percent = 0, details = '', title = '處理中…') {
             uploadProgressTitle.textContent = title;
